@@ -1,0 +1,29 @@
+/* Custom styles for modal dialogs */
+.modal-dialog {
+    max-height: 90vh;
+}
+
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-body {
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+}
+
+.modal-footer button {
+    display: inline-block !important;
+    margin-left: 0.5rem;
+}

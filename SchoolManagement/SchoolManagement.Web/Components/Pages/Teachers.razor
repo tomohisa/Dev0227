@@ -291,6 +291,13 @@ else
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addTeacherModal'));
         if (param === 'show') {
             modal.show();
+            // Ensure buttons are visible
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#addTeacherModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+            }, 100);
         } else {
             modal.hide();
         }
@@ -299,6 +306,13 @@ else
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editTeacherModal'));
         if (param === 'show') {
             modal.show();
+            // Ensure buttons are visible
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#editTeacherModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+            }, 100);
         } else {
             modal.hide();
         }
@@ -307,6 +321,13 @@ else
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('viewClassesModal'));
         if (param === 'show') {
             modal.show();
+            // Ensure buttons are visible
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#viewClassesModal .modal-footer button, #viewClassesModal .row button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+            }, 100);
         } else {
             modal.hide();
         }

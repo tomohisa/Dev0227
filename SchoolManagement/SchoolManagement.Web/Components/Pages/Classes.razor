@@ -345,6 +345,40 @@ else
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('manageClassModal'));
         if (param === 'show') {
             modal.show();
+            // Initialize tabs when the modal is shown
+            var teacherTab = document.getElementById('teacher-tab');
+            var studentsTab = document.getElementById('students-tab');
+            
+            // Add click event listeners to the tabs
+            teacherTab.addEventListener('click', function() {
+                var teacherPane = document.getElementById('teacher-tab-pane');
+                var studentsPane = document.getElementById('students-tab-pane');
+                
+                // Show teacher tab, hide students tab
+                teacherPane.classList.add('show', 'active');
+                studentsPane.classList.remove('show', 'active');
+                
+                // Update active state on tabs
+                teacherTab.classList.add('active');
+                teacherTab.setAttribute('aria-selected', 'true');
+                studentsTab.classList.remove('active');
+                studentsTab.setAttribute('aria-selected', 'false');
+            });
+            
+            studentsTab.addEventListener('click', function() {
+                var teacherPane = document.getElementById('teacher-tab-pane');
+                var studentsPane = document.getElementById('students-tab-pane');
+                
+                // Show students tab, hide teacher tab
+                studentsPane.classList.add('show', 'active');
+                teacherPane.classList.remove('show', 'active');
+                
+                // Update active state on tabs
+                studentsTab.classList.add('active');
+                studentsTab.setAttribute('aria-selected', 'true');
+                teacherTab.classList.remove('active');
+                teacherTab.setAttribute('aria-selected', 'false');
+            });
         } else {
             modal.hide();
         }
@@ -685,7 +719,9 @@ else
         {
             if (Guid.TryParse(addStudentModel.StudentId, out var studentId))
             {
+                // Update both sides of the relationship
                 await ClassApi.AddStudentToClassAsync(addStudentModel.ClassId, studentId);
+                await StudentApi.AssignStudentToClassAsync(studentId, addStudentModel.ClassId);
                 
                 // Reload data
                 await LoadClasses();
@@ -714,7 +750,9 @@ else
     {
         try
         {
+            // Update both sides of the relationship
             await ClassApi.RemoveStudentFromClassAsync(manageClassModel.ClassId, studentId);
+            await StudentApi.RemoveStudentFromClassAsync(studentId);
             
             // Reload data
             await LoadClasses();

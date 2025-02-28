@@ -245,6 +245,13 @@ else
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addStudentModal'));
         if (param === 'show') {
             modal.show();
+            // Ensure buttons are visible
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#addStudentModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+            }, 100);
         } else {
             modal.hide();
         }
@@ -253,6 +260,13 @@ else
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editStudentModal'));
         if (param === 'show') {
             modal.show();
+            // Ensure buttons are visible
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#editStudentModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+            }, 100);
         } else {
             modal.hide();
         }
@@ -261,6 +275,13 @@ else
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('assignClassModal'));
         if (param === 'show') {
             modal.show();
+            // Ensure buttons are visible
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#assignClassModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+            }, 100);
         } else {
             modal.hide();
         }
