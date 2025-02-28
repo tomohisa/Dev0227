@@ -242,13 +242,28 @@ else
 
 <script>
     function DisplayAddStudentModal(param) {
-        $('#addStudentModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addStudentModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
     function DisplayEditStudentModal(param) {
-        $('#editStudentModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editStudentModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
     function DisplayAssignClassModal(param) {
-        $('#assignClassModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('assignClassModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
 </script>
 

@@ -326,13 +326,28 @@ else
 
 <script>
     function DisplayAddClassModal(param) {
-        $('#addClassModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addClassModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
     function DisplayEditClassModal(param) {
-        $('#editClassModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editClassModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
     function DisplayManageClassModal(param) {
-        $('#manageClassModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('manageClassModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
 </script>
 

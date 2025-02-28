@@ -1,0 +1,13 @@
+# debug
+
+Execute Project host with Aspire - this open db, api, and web project with Host.
+dotnet run --project SchoolManagement.AppHost --launch-profile https
+
+
+Web Frontend can access following url:
+https://localhost:7201
+
+# document
+How to use Event Sourcing with Sekiban will be in the document below
+./Sekiban.Instruction.md
+

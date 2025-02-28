@@ -288,13 +288,28 @@ else
 
 <script>
     function DisplayAddTeacherModal(param) {
-        $('#addTeacherModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addTeacherModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
     function DisplayEditTeacherModal(param) {
-        $('#editTeacherModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editTeacherModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
     function DisplayViewClassesModal(param) {
-        $('#viewClassesModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('viewClassesModal'));
+        if (param === 'show') {
+            modal.show();
+        } else {
+            modal.hide();
+        }
     }
 </script>
 
