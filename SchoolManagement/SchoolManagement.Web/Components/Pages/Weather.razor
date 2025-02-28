@@ -56,7 +56,7 @@ else
 }
 
 <div class="modal fade" id="addForecastModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addForecastModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <EditForm FormName="weather-forecast" Model="@forecastModel" OnValidSubmit="HandleAddForecastSubmit">
                 <div class="modal-header">
@@ -107,7 +107,7 @@ else
 </div>
 
 <div class="modal fade" id="editLocationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editLocationModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <EditForm FormName="edit-location" Model="@editLocationModel" OnValidSubmit="HandleEditLocationSubmit">
                 <div class="modal-header">
@@ -139,11 +139,81 @@ else
 
 <script>
     function DisplayAddModal(param) {
-        $('#addForecastModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addForecastModal'));
+        if (param === 'show') {
+            modal.show();
+            // Ensure buttons are visible and fix positioning
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#addForecastModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+                
+                // Fix modal positioning for small screens
+                adjustModalForScreenSize('addForecastModal');
+            }, 100);
+        } else {
+            modal.hide();
+        }
     }
+    
     function DisplayEditLocationModal(param) {
-        $('#editLocationModal').modal(param);
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editLocationModal'));
+        if (param === 'show') {
+            modal.show();
+            // Ensure buttons are visible and fix positioning
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#editLocationModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+                
+                // Fix modal positioning for small screens
+                adjustModalForScreenSize('editLocationModal');
+            }, 100);
+        } else {
+            modal.hide();
+        }
     }
+    
+    // Helper function to adjust modal display based on screen size
+    function adjustModalForScreenSize(modalId) {
+        var modalElement = document.getElementById(modalId);
+        var modalDialog = modalElement.querySelector('.modal-dialog');
+        
+        // For very small screens, ensure the modal takes up the full screen
+        if (window.innerWidth < 576) {
+            modalDialog.style.margin = '0';
+            modalDialog.style.maxWidth = '100%';
+            modalDialog.style.height = '100%';
+            
+            // Fix click position issues by ensuring the modal content is properly positioned
+            var modalContent = modalDialog.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.height = '100%';
+                modalContent.style.borderRadius = '0';
+            }
+        } else {
+            // Reset for larger screens
+            modalDialog.style.margin = '1.75rem auto';
+            modalDialog.style.maxWidth = '';
+            modalDialog.style.height = '';
+            
+            var modalContent = modalDialog.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.height = '';
+                modalContent.style.borderRadius = '';
+            }
+        }
+    }
+    
+    // Add window resize listener to adjust modals when screen size changes
+    window.addEventListener('resize', function() {
+        var openModals = document.querySelectorAll('.modal.show');
+        openModals.forEach(function(modal) {
+            adjustModalForScreenSize(modal.id);
+        });
+    });
 </script>
 
 @code {
@@ -255,7 +325,7 @@ else
             
             // Reset form and close modal
             forecastModel = new WeatherForecastModel();
-            await JsRuntime.InvokeVoidAsync("$", "#addForecastModal", "modal", "hide");
+            await JsRuntime.InvokeVoidAsync("DisplayAddModal", "hide");
         }
         catch (Exception ex)
         {

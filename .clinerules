@@ -5,7 +5,8 @@ cd SchoolManagement/SchoolManagement.AppHost
 dotnet run --launch-profile https
 
 whenever code changes, it does not update program, you need to quit and run again.
-you can kill process that names "SchoolManagement."
+you can kill process that names "SchoolManagement." with follwing command
+pkill -9 -f "SchoolManagement." 
 
 Web Frontend can access following url:
 https://localhost:7201

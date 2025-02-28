@@ -92,7 +92,7 @@ else
 
 <!-- Add Teacher Modal -->
 <div class="modal fade" id="addTeacherModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <EditForm FormName="add-teacher" Model="@teacherModel" OnValidSubmit="HandleAddTeacherSubmit">
                 <div class="modal-header">
@@ -149,7 +149,7 @@ else
 
 <!-- Edit Teacher Modal -->
 <div class="modal fade" id="editTeacherModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editTeacherModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <EditForm FormName="edit-teacher" Model="@editTeacherModel" OnValidSubmit="HandleEditTeacherSubmit">
                 <div class="modal-header">
@@ -201,7 +201,7 @@ else
 
 <!-- View Classes Modal -->
 <div class="modal fade" id="viewClassesModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="viewClassesModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="viewClassesModalLabel">Classes for @viewClassesModel.TeacherName</h5>
@@ -302,6 +302,7 @@ else
             modal.hide();
         }
     }
+    
     function DisplayEditTeacherModal(param) {
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editTeacherModal'));
         if (param === 'show') {
@@ -317,6 +318,7 @@ else
             modal.hide();
         }
     }
+    
     function DisplayViewClassesModal(param) {
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('viewClassesModal'));
         if (param === 'show') {
@@ -332,6 +334,16 @@ else
             modal.hide();
         }
     }
+    
+    // Add event listener to fix any touch event issues on mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fix for iOS touch events
+        document.querySelectorAll('.modal-dialog').forEach(function(dialog) {
+            dialog.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            });
+        });
+    });
 </script>
 
 @code {

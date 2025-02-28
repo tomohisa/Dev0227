@@ -93,7 +93,7 @@ else
 
 <!-- Add Student Modal -->
 <div class="modal fade" id="addStudentModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <EditForm FormName="add-student" Model="@studentModel" OnValidSubmit="HandleAddStudentSubmit">
                 <div class="modal-header">
@@ -150,7 +150,7 @@ else
 
 <!-- Edit Student Modal -->
 <div class="modal fade" id="editStudentModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <EditForm FormName="edit-student" Model="@editStudentModel" OnValidSubmit="HandleEditStudentSubmit">
                 <div class="modal-header">
@@ -197,7 +197,7 @@ else
 
 <!-- Assign Class Modal -->
 <div class="modal fade" id="assignClassModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="assignClassModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
         <div class="modal-content">
             <EditForm FormName="assign-class" Model="@assignClassModel" OnValidSubmit="HandleAssignClassSubmit">
                 <div class="modal-header">
@@ -256,6 +256,7 @@ else
             modal.hide();
         }
     }
+    
     function DisplayEditStudentModal(param) {
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editStudentModal'));
         if (param === 'show') {
@@ -271,6 +272,7 @@ else
             modal.hide();
         }
     }
+    
     function DisplayAssignClassModal(param) {
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('assignClassModal'));
         if (param === 'show') {
@@ -286,6 +288,16 @@ else
             modal.hide();
         }
     }
+    
+    // Add event listener to fix any touch event issues on mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fix for iOS touch events
+        document.querySelectorAll('.modal-dialog').forEach(function(dialog) {
+            dialog.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            });
+        });
+    });
 </script>
 
 @code {
