@@ -1,0 +1,87 @@
+@page "/"
+
+<PageTitle>School Management System</PageTitle>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h1 class="card-title">School Management System</h1>
+                    <p class="card-text lead">
+                        Welcome to the School Management System, an event-sourced application built with Sekiban.
+                    </p>
+                    <p>
+                        This application demonstrates how to use event sourcing to manage students, teachers, and classes in a school environment.
+                        All state changes are stored as immutable events, providing a complete history of all actions taken in the system.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <span class="bi bi-people-fill" aria-hidden="true"></span> Students
+                    </h2>
+                    <p class="card-text">
+                        Manage student information including personal details and class assignments.
+                    </p>
+                    <a href="students" class="btn btn-primary">Manage Students</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <span class="bi bi-person-workspace" aria-hidden="true"></span> Teachers
+                    </h2>
+                    <p class="card-text">
+                        Manage teacher information including subjects taught and class assignments.
+                    </p>
+                    <a href="teachers" class="btn btn-primary">Manage Teachers</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">
+                        <span class="bi bi-book-fill" aria-hidden="true"></span> Classes
+                    </h2>
+                    <p class="card-text">
+                        Create and manage classes, assign teachers, and enroll students.
+                    </p>
+                    <a href="classes" class="btn btn-primary">Manage Classes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">About Event Sourcing</h3>
+                    <p class="card-text">
+                        Event sourcing is a design pattern where all changes to an application's state are stored as a sequence of events.
+                        These events are the source of truth, and the current state is derived by replaying these events.
+                    </p>
+                    <p class="card-text">
+                        Benefits of event sourcing include:
+                    </p>
+                    <ul>
+                        <li>Complete audit trail of all changes</li>
+                        <li>Ability to reconstruct the state at any point in time</li>
+                        <li>Separation of write and read models</li>
+                        <li>Improved scalability and performance</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

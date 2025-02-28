@@ -1,0 +1,577 @@
+@page "/teachers"
+@attribute [StreamRendering(true)]
+
+@using SchoolManagement.Domain
+@using System.ComponentModel.DataAnnotations
+
+@inject TeacherApiClient TeacherApi
+@inject ClassApiClient ClassApi
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Teachers</PageTitle>
+
+<h1>Teachers</h1>
+
+<div class="mb-3">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search by name" @bind="nameFilter" @bind:event="oninput" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="ApplyFilters">Search</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search by subject" @bind="subjectFilter" @bind:event="oninput" />
+                <button class="btn btn-outline-secondary" type="button" @onclick="ApplyFilters">Search</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="OpenAddTeacherModal">Add New Teacher</button>
+        </div>
+    </div>
+</div>
+
+<h3>Teacher List</h3>
+
+@if (teachers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!teachers.Any())
+{
+    <p>No teachers found. Add a new teacher to get started.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Teacher ID</th>
+                    <th>Subject</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Classes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var teacher in teachers)
+                {
+                    <tr>
+                        <td>@teacher.Name</td>
+                        <td>@teacher.TeacherIdNumber</td>
+                        <td>@teacher.Subject</td>
+                        <td>@teacher.Email</td>
+                        <td>@teacher.PhoneNumber</td>
+                        <td>
+                            @if (teacher.ClassIds.Length > 0)
+                            {
+                                <span>@teacher.ClassIds.Length classes</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No classes</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-sm btn-primary" @onclick="() => OpenEditTeacherModal(teacher)">Edit</button>
+                                <button class="btn btn-sm btn-info" @onclick="() => OpenViewClassesModal(teacher)">View Classes</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => HandleDeleteTeacher(teacher.TeacherId)">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<!-- Add Teacher Modal -->
+<div class="modal fade" id="addTeacherModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <EditForm FormName="add-teacher" Model="@teacherModel" OnValidSubmit="HandleAddTeacherSubmit">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTeacherModalLabel">Add Teacher</h5>
+                    <button type="button" class="btn-close" @onclick="CloseAddTeacherModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <InputText id="name" class="form-control" @bind-Value="teacherModel.Name" />
+                        <ValidationMessage For="@(() => teacherModel.Name)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="teacherId" class="form-label">Teacher ID</label>
+                        <InputText id="teacherId" class="form-control" @bind-Value="teacherModel.TeacherId" />
+                        <ValidationMessage For="@(() => teacherModel.TeacherId)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <InputText id="subject" class="form-control" @bind-Value="teacherModel.Subject" />
+                        <ValidationMessage For="@(() => teacherModel.Subject)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <InputText id="email" class="form-control" @bind-Value="teacherModel.Email" />
+                        <ValidationMessage For="@(() => teacherModel.Email)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <InputText id="phoneNumber" class="form-control" @bind-Value="teacherModel.PhoneNumber" />
+                        <ValidationMessage For="@(() => teacherModel.PhoneNumber)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <InputTextArea id="address" class="form-control" @bind-Value="teacherModel.Address" />
+                        <ValidationMessage For="@(() => teacherModel.Address)" class="text-danger" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(teacherModel.Error))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @teacherModel.Error
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseAddTeacherModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Teacher</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Teacher Modal -->
+<div class="modal fade" id="editTeacherModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <EditForm FormName="edit-teacher" Model="@editTeacherModel" OnValidSubmit="HandleEditTeacherSubmit">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editTeacherModalLabel">Edit Teacher</h5>
+                    <button type="button" class="btn-close" @onclick="CloseEditTeacherModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Name</label>
+                        <InputText id="editName" class="form-control" @bind-Value="editTeacherModel.Name" />
+                        <ValidationMessage For="@(() => editTeacherModel.Name)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editSubject" class="form-label">Subject</label>
+                        <InputText id="editSubject" class="form-control" @bind-Value="editTeacherModel.Subject" />
+                        <ValidationMessage For="@(() => editTeacherModel.Subject)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <InputText id="editEmail" class="form-control" @bind-Value="editTeacherModel.Email" />
+                        <ValidationMessage For="@(() => editTeacherModel.Email)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhoneNumber" class="form-label">Phone Number</label>
+                        <InputText id="editPhoneNumber" class="form-control" @bind-Value="editTeacherModel.PhoneNumber" />
+                        <ValidationMessage For="@(() => editTeacherModel.PhoneNumber)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editAddress" class="form-label">Address</label>
+                        <InputTextArea id="editAddress" class="form-control" @bind-Value="editTeacherModel.Address" />
+                        <ValidationMessage For="@(() => editTeacherModel.Address)" class="text-danger" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(editTeacherModel.Error))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @editTeacherModel.Error
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseEditTeacherModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<!-- View Classes Modal -->
+<div class="modal fade" id="viewClassesModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="viewClassesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewClassesModalLabel">Classes for @viewClassesModel.TeacherName</h5>
+                <button type="button" class="btn-close" @onclick="CloseViewClassesModal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (viewClassesModel.TeacherClasses == null)
+                {
+                    <p><em>Loading...</em></p>
+                }
+                else if (!viewClassesModel.TeacherClasses.Any())
+                {
+                    <p>No classes assigned to this teacher.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Class Code</th>
+                                    <th>Description</th>
+                                    <th>Students</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var classItem in viewClassesModel.TeacherClasses)
+                                {
+                                    <tr>
+                                        <td>@classItem.Name</td>
+                                        <td>@classItem.ClassCode</td>
+                                        <td>@classItem.Description</td>
+                                        <td>@classItem.StudentIds.Length</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning" @onclick="() => HandleRemoveFromClass(classItem.ClassId)">Remove</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <hr />
+
+                <h6>Assign to New Class</h6>
+                <EditForm FormName="assign-class" Model="@assignClassModel" OnValidSubmit="HandleAssignClassSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label for="classId" class="form-label">Class</label>
+                            <InputSelect id="classId" class="form-select" @bind-Value="assignClassModel.ClassId">
+                                <option value="">Select a class...</option>
+                                @if (availableClasses != null)
+                                {
+                                    @foreach (var classItem in availableClasses)
+                                    {
+                                        <option value="@classItem.ClassId">@classItem.Name (@classItem.ClassCode)</option>
+                                    }
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => assignClassModel.ClassId)" class="text-danger" />
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">Assign</button>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(assignClassModel.Error))
+                    {
+                        <div class="alert alert-danger mt-3" role="alert">
+                            @assignClassModel.Error
+                        </div>
+                    }
+                </EditForm>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CloseViewClassesModal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function DisplayAddTeacherModal(param) {
+        $('#addTeacherModal').modal(param);
+    }
+    function DisplayEditTeacherModal(param) {
+        $('#editTeacherModal').modal(param);
+    }
+    function DisplayViewClassesModal(param) {
+        $('#viewClassesModal').modal(param);
+    }
+</script>
+
+@code {
+    private TeacherQuery.TeacherRecord[]? teachers;
+    private ClassQuery.ClassRecord[]? allClasses;
+    private ClassQuery.ClassRecord[]? availableClasses;
+    private string nameFilter = "";
+    private string subjectFilter = "";
+    private TeacherModel teacherModel = new();
+    private EditTeacherModel editTeacherModel = new();
+    private ViewClassesModel viewClassesModel = new();
+    private AssignClassModel assignClassModel = new();
+
+    public class TeacherModel
+    {
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "Teacher ID is required")]
+        public string TeacherId { get; set; } = "";
+
+        [Required(ErrorMessage = "Subject is required")]
+        public string Subject { get; set; } = "";
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Phone number is required")]
+        public string PhoneNumber { get; set; } = "";
+
+        [Required(ErrorMessage = "Address is required")]
+        public string Address { get; set; } = "";
+
+        public string? Error { get; set; }
+    }
+
+    public class EditTeacherModel
+    {
+        public Guid TeacherId { get; set; }
+
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "Subject is required")]
+        public string Subject { get; set; } = "";
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
+        public string Email { get; set; } = "";
+
+        [Required(ErrorMessage = "Phone number is required")]
+        public string PhoneNumber { get; set; } = "";
+
+        [Required(ErrorMessage = "Address is required")]
+        public string Address { get; set; } = "";
+
+        public string? Error { get; set; }
+    }
+
+    public class ViewClassesModel
+    {
+        public Guid TeacherId { get; set; }
+        public string TeacherName { get; set; } = "";
+        public ClassQuery.ClassRecord[]? TeacherClasses { get; set; }
+    }
+
+    public class AssignClassModel
+    {
+        public Guid TeacherId { get; set; }
+
+        [Required(ErrorMessage = "Class is required")]
+        public string ClassId { get; set; } = "";
+
+        public string? Error { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTeachers();
+        await LoadClasses();
+    }
+
+    private async Task LoadTeachers()
+    {
+        teachers = await TeacherApi.GetTeachersAsync(nameFilter, subjectFilter);
+    }
+
+    private async Task LoadClasses()
+    {
+        allClasses = await ClassApi.GetClassesAsync();
+    }
+
+    private async Task ApplyFilters()
+    {
+        await LoadTeachers();
+    }
+
+    private async Task OpenAddTeacherModal()
+    {
+        teacherModel = new TeacherModel();
+        await JsRuntime.InvokeVoidAsync("DisplayAddTeacherModal", "show");
+    }
+
+    private async Task CloseAddTeacherModal()
+    {
+        teacherModel = new TeacherModel();
+        await JsRuntime.InvokeVoidAsync("DisplayAddTeacherModal", "hide");
+    }
+
+    private async Task OpenEditTeacherModal(TeacherQuery.TeacherRecord teacher)
+    {
+        editTeacherModel = new EditTeacherModel
+        {
+            TeacherId = teacher.TeacherId,
+            Name = teacher.Name,
+            Subject = teacher.Subject,
+            Email = teacher.Email,
+            PhoneNumber = teacher.PhoneNumber,
+            Address = teacher.Address
+        };
+        await JsRuntime.InvokeVoidAsync("DisplayEditTeacherModal", "show");
+    }
+
+    private async Task CloseEditTeacherModal()
+    {
+        editTeacherModel = new EditTeacherModel();
+        await JsRuntime.InvokeVoidAsync("DisplayEditTeacherModal", "hide");
+    }
+
+    private async Task OpenViewClassesModal(TeacherQuery.TeacherRecord teacher)
+    {
+        viewClassesModel = new ViewClassesModel
+        {
+            TeacherId = teacher.TeacherId,
+            TeacherName = teacher.Name
+        };
+
+        assignClassModel = new AssignClassModel
+        {
+            TeacherId = teacher.TeacherId
+        };
+
+        await LoadTeacherClasses(teacher.TeacherId);
+        await UpdateAvailableClasses(teacher.ClassIds);
+        await JsRuntime.InvokeVoidAsync("DisplayViewClassesModal", "show");
+    }
+
+    private async Task CloseViewClassesModal()
+    {
+        viewClassesModel = new ViewClassesModel();
+        assignClassModel = new AssignClassModel();
+        await JsRuntime.InvokeVoidAsync("DisplayViewClassesModal", "hide");
+    }
+
+    private async Task LoadTeacherClasses(Guid teacherId)
+    {
+        viewClassesModel.TeacherClasses = await ClassApi.GetClassesByTeacherIdAsync(teacherId);
+    }
+
+    private async Task UpdateAvailableClasses(Guid[] assignedClassIds)
+    {
+        if (allClasses == null)
+        {
+            availableClasses = Array.Empty<ClassQuery.ClassRecord>();
+            return;
+        }
+
+        var assignedClassIdSet = new HashSet<Guid>(assignedClassIds);
+        availableClasses = allClasses.Where(c => !assignedClassIdSet.Contains(c.ClassId)).ToArray();
+    }
+
+    private async Task HandleAddTeacherSubmit()
+    {
+        try
+        {
+            await TeacherApi.RegisterTeacherAsync(
+                teacherModel.Name,
+                teacherModel.TeacherId,
+                teacherModel.Email,
+                teacherModel.PhoneNumber,
+                teacherModel.Address,
+                teacherModel.Subject);
+
+            await LoadTeachers();
+            await CloseAddTeacherModal();
+        }
+        catch (Exception ex)
+        {
+            teacherModel.Error = $"Failed to add teacher: {ex.Message}";
+        }
+    }
+
+    private async Task HandleEditTeacherSubmit()
+    {
+        try
+        {
+            await TeacherApi.UpdateTeacherAsync(
+                editTeacherModel.TeacherId,
+                editTeacherModel.Name,
+                editTeacherModel.Email,
+                editTeacherModel.PhoneNumber,
+                editTeacherModel.Address,
+                editTeacherModel.Subject);
+
+            await LoadTeachers();
+            await CloseEditTeacherModal();
+        }
+        catch (Exception ex)
+        {
+            editTeacherModel.Error = $"Failed to update teacher: {ex.Message}";
+        }
+    }
+
+    private async Task HandleDeleteTeacher(Guid teacherId)
+    {
+        try
+        {
+            await TeacherApi.DeleteTeacherAsync(teacherId);
+            await LoadTeachers();
+        }
+        catch (Exception ex)
+        {
+            // Show error message
+            Console.Error.WriteLine($"Error deleting teacher: {ex.Message}");
+        }
+    }
+
+    private async Task HandleAssignClassSubmit()
+    {
+        try
+        {
+            if (Guid.TryParse(assignClassModel.ClassId, out var classId))
+            {
+                await TeacherApi.AssignTeacherToClassAsync(assignClassModel.TeacherId, classId);
+                await LoadTeacherClasses(assignClassModel.TeacherId);
+                await LoadTeachers();
+                
+                var teacher = teachers?.FirstOrDefault(t => t.TeacherId == assignClassModel.TeacherId);
+                if (teacher != null)
+                {
+                    await UpdateAvailableClasses(teacher.ClassIds);
+                }
+                
+                assignClassModel.ClassId = "";
+                assignClassModel.Error = null;
+            }
+            else
+            {
+                assignClassModel.Error = "Invalid class selection";
+            }
+        }
+        catch (Exception ex)
+        {
+            assignClassModel.Error = $"Failed to assign class: {ex.Message}";
+        }
+    }
+
+    private async Task HandleRemoveFromClass(Guid classId)
+    {
+        try
+        {
+            await TeacherApi.RemoveTeacherFromClassAsync(viewClassesModel.TeacherId, classId);
+            await LoadTeacherClasses(viewClassesModel.TeacherId);
+            await LoadTeachers();
+            
+            var teacher = teachers?.FirstOrDefault(t => t.TeacherId == viewClassesModel.TeacherId);
+            if (teacher != null)
+            {
+                await UpdateAvailableClasses(teacher.ClassIds);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Show error message
+            Console.Error.WriteLine($"Error removing teacher from class: {ex.Message}");
+        }
+    }
+}
