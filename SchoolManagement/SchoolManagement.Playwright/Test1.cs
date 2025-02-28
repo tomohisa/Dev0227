@@ -22,11 +22,11 @@ public partial class SchoolManagementTests
     };
 
     // Teacher data
-    private readonly (string Name, string Id, string Email, string Phone, string Subject)[] _teachers = new[]
+    private readonly (string Name, string Id, string Email, string Phone, string Subject, string Address)[] _teachers = new[]
     {
-        ("Dr. Robert Brown", "T12345", "robert.brown@example.com", "555-111-2222", "Mathematics"),
-        ("Prof. Sarah Wilson", "T67890", "sarah.wilson@example.com", "555-333-4444", "Science"),
-        ("Ms. Emily Davis", "T24680", "emily.davis@example.com", "555-555-6666", "English")
+        ("Dr. Robert Brown", "T12345", "robert.brown@example.com", "555-111-2222", "Mathematics", "123 University Ave, College Town, CA 94321"),
+        ("Prof. Sarah Wilson", "T67890", "sarah.wilson@example.com", "555-333-4444", "Science", "456 Campus Dr, Research City, CA 94322"),
+        ("Ms. Emily Davis", "T24680", "emily.davis@example.com", "555-555-6666", "English", "789 School St, Education Valley, CA 94323")
     };
 
     // Class data
@@ -147,7 +147,8 @@ public partial class SchoolManagementTests
                     teacherId: teacher.Id,
                     email: teacher.Email,
                     phone: teacher.Phone,
-                    subject: teacher.Subject
+                    subject: teacher.Subject,
+                    address: teacher.Address
                 );
                 
                 // Verify teacher was added by checking for the teacher name and ID in the table
@@ -332,7 +333,7 @@ public partial class SchoolManagementTests
         }
     }
     
-    private async Task AddTeacher(string name, string teacherId, string email, string phone, string subject)
+    private async Task AddTeacher(string name, string teacherId, string email, string phone, string subject, string address = null)
     {
         try
         {
@@ -393,6 +394,46 @@ public partial class SchoolManagementTests
             await addTeacherModal.Locator("input#email").FillAsync(email);
             await addTeacherModal.Locator("input#phoneNumber").FillAsync(phone);
             await addTeacherModal.Locator("input#subject").FillAsync(subject);
+            
+            // Find and fill the address field which is required
+            try {
+                // Print all input fields for debugging
+                var allInputs = addTeacherModal.Locator("input, textarea");
+                var inputCount = await allInputs.CountAsync();
+                System.Console.WriteLine($"Found {inputCount} input elements in the modal");
+                
+                for (int i = 0; i < inputCount; i++) {
+                    var input = allInputs.Nth(i);
+                    var inputId = await input.GetAttributeAsync("id") ?? "no-id";
+                    var inputName = await input.GetAttributeAsync("name") ?? "no-name";
+                    var inputType = await input.GetAttributeAsync("type") ?? "no-type";
+                    var placeholder = await input.GetAttributeAsync("placeholder") ?? "no-placeholder";
+                    System.Console.WriteLine($"Input {i}: id={inputId}, name={inputName}, type={inputType}, placeholder={placeholder}");
+                }
+                
+                // Use the provided address or a default one
+                string addressValue = address ?? "123 Faculty Lane, Academic City, CA 94000";
+                
+                // Try different possible selectors for the address field
+                var addressField = addTeacherModal.Locator("input[name*='address'], input[id*='address'], textarea[name*='address'], textarea[id*='address']").First;
+                if (await addressField.CountAsync() > 0) {
+                    await addressField.FillAsync(addressValue);
+                    System.Console.WriteLine("Found and filled address field");
+                } else {
+                    System.Console.WriteLine("Could not find address field, trying alternative approach");
+                    // If we can't find the address field by name or id, try by label text
+                    var addressLabel = addTeacherModal.Locator("label:has-text('Address')");
+                    if (await addressLabel.CountAsync() > 0) {
+                        var forAttr = await addressLabel.GetAttributeAsync("for");
+                        if (forAttr != null) {
+                            await addTeacherModal.Locator($"#{forAttr}").FillAsync(addressValue);
+                            System.Console.WriteLine($"Found address field by label with for={forAttr}");
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                System.Console.WriteLine($"Error finding/filling address field: {ex.Message}");
+            }
             
             // Take a screenshot before submitting
             await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"add-teacher-form-{teacherId}.png" });
