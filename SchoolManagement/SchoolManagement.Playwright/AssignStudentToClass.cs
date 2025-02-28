@@ -50,7 +50,7 @@ namespace SchoolManagement.Playwright
                 var studentDropdown = assignStudentModal.Locator("select");
                 
                 // Select the student by name
-                await studentDropdown.SelectOptionAsync(new SelectOptionValue { Label = studentName });
+                await studentDropdown.SelectOptionAsync(new[] { studentName });
                 
                 // Take a screenshot before submitting
                 await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"assign-student-form-{className}.png" });

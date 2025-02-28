@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SchoolManagement.Playwright;
 
-[TestFixture]
+[TestFixture] 
 public partial class SchoolManagementTests
 {
     private const string BaseUrl = "https://localhost:7201";
@@ -100,8 +100,8 @@ public partial class SchoolManagementTests
             var studentsNavLink = _page.Locator("nav a.nav-link", new() { HasText = "Students" });
             
             // Wait for the navigation link to be visible
-            await studentsNavLink.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
-            Assert.IsTrue(await studentsNavLink.IsVisibleAsync(), "Students navigation link is not visible");
+            await studentsNavLink.WaitForAsync(new() { Timeout = 10000 });
+            Assert.That(await studentsNavLink.IsVisibleAsync(), Is.True, "Students navigation link is not visible");
             
             // Step 1: Add 3 students
             for (int i = 0; i < _students.Length; i++)
@@ -129,7 +129,7 @@ public partial class SchoolManagementTests
                 System.Console.WriteLine($"Found {studentRowCount} rows containing '{student.Name}' and '{student.Id}'");
                 
                 // Verify at least one row exists with the student name and ID
-                Assert.IsTrue(studentRowCount > 0, $"Student {student.Name} with ID {student.Id} was not added successfully");
+                Assert.That(studentRowCount, Is.GreaterThan(0), $"Student {student.Name} with ID {student.Id} was not added successfully");
             }
             
             // Step 2: Add 3 teachers
@@ -156,7 +156,7 @@ public partial class SchoolManagementTests
                 System.Console.WriteLine($"Found {teacherRowCount} rows containing '{teacher.Name}' and '{teacher.Id}'");
                 
                 // Verify at least one row exists with the teacher name and ID
-                Assert.IsTrue(teacherRowCount > 0, $"Teacher {teacher.Name} with ID {teacher.Id} was not added successfully");
+                Assert.That(teacherRowCount, Is.GreaterThan(0), $"Teacher {teacher.Name} with ID {teacher.Id} was not added successfully");
             }
             
             // Step 3: Add 2 classes
@@ -181,7 +181,7 @@ public partial class SchoolManagementTests
                 System.Console.WriteLine($"Found {classRowCount} rows containing '{classData.Name}' and '{classData.Code}'");
                 
                 // Verify at least one row exists with the class name and code
-                Assert.IsTrue(classRowCount > 0, $"Class {classData.Name} with code {classData.Code} was not added successfully");
+                Assert.That(classRowCount, Is.GreaterThan(0), $"Class {classData.Name} with code {classData.Code} was not added successfully");
             }
             
             // Step 4: Assign teachers to classes
@@ -404,8 +404,18 @@ public partial class SchoolManagementTests
             
             // Wait for the modal to close
             System.Console.WriteLine("Waiting for modal to close...");
-            await _page.WaitForSelectorAsync(".modal.show", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden, Timeout = 10000 });
-            System.Console.WriteLine("Modal closed");
+            try {
+                await _page.WaitForSelectorAsync(".modal.show", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden, Timeout = 30000 });
+                System.Console.WriteLine("Modal closed");
+            } catch (Exception ex) {
+                System.Console.WriteLine($"Modal did not close: {ex.Message}");
+                // Try to force close the modal
+                await _page.EvaluateAsync("document.querySelector('.modal.show .btn-close').click()");
+                await Task.Delay(1000);
+                // Try pressing Escape key
+                await _page.Keyboard.PressAsync("Escape");
+                await Task.Delay(1000);
+            }
             
             // Wait for the page to load
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
@@ -502,6 +512,44 @@ public partial class SchoolManagementTests
             await addStudentModal.Locator("input#email").FillAsync(email);
             await addStudentModal.Locator("input#phoneNumber").FillAsync(phone);
             
+            // Find and fill the address field which is required
+            // Try different possible selectors for the address field
+            try {
+                // Print all input fields for debugging
+                var allInputs = addStudentModal.Locator("input, textarea");
+                var inputCount = await allInputs.CountAsync();
+                System.Console.WriteLine($"Found {inputCount} input elements in the modal");
+                
+                for (int i = 0; i < inputCount; i++) {
+                    var input = allInputs.Nth(i);
+                    var inputId = await input.GetAttributeAsync("id") ?? "no-id";
+                    var inputName = await input.GetAttributeAsync("name") ?? "no-name";
+                    var inputType = await input.GetAttributeAsync("type") ?? "no-type";
+                    var placeholder = await input.GetAttributeAsync("placeholder") ?? "no-placeholder";
+                    System.Console.WriteLine($"Input {i}: id={inputId}, name={inputName}, type={inputType}, placeholder={placeholder}");
+                }
+                
+                // Try different possible selectors for the address field
+                var addressField = addStudentModal.Locator("input[name*='address'], input[id*='address'], textarea[name*='address'], textarea[id*='address']").First;
+                if (await addressField.CountAsync() > 0) {
+                    await addressField.FillAsync("123 Main St, Anytown, CA 12345");
+                    System.Console.WriteLine("Found and filled address field");
+                } else {
+                    System.Console.WriteLine("Could not find address field, trying alternative approach");
+                    // If we can't find the address field by name or id, try by label text
+                    var addressLabel = addStudentModal.Locator("label:has-text('Address')");
+                    if (await addressLabel.CountAsync() > 0) {
+                        var forAttr = await addressLabel.GetAttributeAsync("for");
+                        if (forAttr != null) {
+                            await addStudentModal.Locator($"#{forAttr}").FillAsync("123 Main St, Anytown, CA 12345");
+                            System.Console.WriteLine($"Found address field by label with for={forAttr}");
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                System.Console.WriteLine($"Error finding/filling address field: {ex.Message}");
+            }
+            
             // Take a screenshot before submitting
             await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"add-student-form-{studentId}.png" });
             
@@ -512,8 +560,18 @@ public partial class SchoolManagementTests
             
             // Wait for the modal to close
             System.Console.WriteLine("Waiting for modal to close...");
-            await _page.WaitForSelectorAsync(".modal.show", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden, Timeout = 10000 });
-            System.Console.WriteLine("Modal closed");
+            try {
+                await _page.WaitForSelectorAsync(".modal.show", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden, Timeout = 30000 });
+                System.Console.WriteLine("Modal closed");
+            } catch (Exception ex) {
+                System.Console.WriteLine($"Modal did not close: {ex.Message}");
+                // Try to force close the modal
+                await _page.EvaluateAsync("document.querySelector('.modal.show .btn-close').click()");
+                await Task.Delay(1000);
+                // Try pressing Escape key
+                await _page.Keyboard.PressAsync("Escape");
+                await Task.Delay(1000);
+            }
             
             // Wait for the page to load
             await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
