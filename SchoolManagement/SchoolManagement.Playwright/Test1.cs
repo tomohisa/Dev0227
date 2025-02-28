@@ -1,28 +1,44 @@
-﻿using Microsoft.Playwright;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿﻿using Microsoft.Playwright;
+using NUnit.Framework;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SchoolManagement.Playwright;
 
-[TestClass]
-public class SchoolManagementTests
+[TestFixture]
+public partial class SchoolManagementTests
 {
     private const string BaseUrl = "https://localhost:7201";
     private IBrowser? _browser;
     private IBrowserContext? _context;
     private IPage? _page;
 
-    [TestInitialize]
-    public async Task TestInitialize()
+    // Student data
+    private readonly (string Name, string Id, string Email, string Phone)[] _students = new[]
     {
-        // Install browsers if needed
-        var exitCode = Microsoft.Playwright.Program.Main(new[] { "install", "--with-deps" });
-        if (exitCode != 0)
-        {
-            throw new System.Exception($"Playwright exited with code {exitCode}");
-        }
+        ("John Smith", "S12345", "john.smith@example.com", "555-123-4567"),
+        ("Jane Doe", "S67890", "jane.doe@example.com", "555-987-6543"),
+        ("Michael Johnson", "S24680", "michael.johnson@example.com", "555-246-8024")
+    };
 
+    // Teacher data
+    private readonly (string Name, string Id, string Email, string Phone, string Subject)[] _teachers = new[]
+    {
+        ("Dr. Robert Brown", "T12345", "robert.brown@example.com", "555-111-2222", "Mathematics"),
+        ("Prof. Sarah Wilson", "T67890", "sarah.wilson@example.com", "555-333-4444", "Science"),
+        ("Ms. Emily Davis", "T24680", "emily.davis@example.com", "555-555-6666", "English")
+    };
+
+    // Class data
+    private readonly (string Name, string Code, string Description)[] _classes = new[]
+    {
+        ("Mathematics 101", "MATH101", "An introductory course to basic mathematics concepts and principles."),
+        ("Science 101", "SCI101", "An introductory course to basic science concepts and principles.")
+    };
+
+    [SetUp]
+    public async Task SetUp()
+    {
         // Create Playwright instance
         var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         
@@ -47,8 +63,8 @@ public class SchoolManagementTests
         _page = await _context.NewPageAsync();
     }
 
-    [TestCleanup]
-    public async Task TestCleanup()
+    [TearDown]
+    public async Task TearDown()
     {
         // Close browser
         if (_browser != null)
@@ -57,8 +73,8 @@ public class SchoolManagementTests
         }
     }
 
-    [TestMethod]
-    public async Task AddStudentsAndClass()
+    [Test]
+    public async Task SchoolManagementEndToEndTest()
     {
         try
         {
@@ -87,84 +103,143 @@ public class SchoolManagementTests
             await studentsNavLink.WaitForAsync(new LocatorWaitForOptions { Timeout = 10000 });
             Assert.IsTrue(await studentsNavLink.IsVisibleAsync(), "Students navigation link is not visible");
             
-            // Step 1: Add first student (John Smith)
-            string firstStudentName = "John Smith";
-            string firstStudentId = "S12345";
-            await AddStudent(
-                name: firstStudentName,
-                studentId: firstStudentId,
-                email: "john.smith@example.com",
-                phone: "555-123-4567"
-            );
+            // Step 1: Add 3 students
+            for (int i = 0; i < _students.Length; i++)
+            {
+                var student = _students[i];
+                System.Console.WriteLine($"Adding student {i+1}/{_students.Length}: {student.Name} ({student.Id})");
+                
+                // Reload the page to ensure we have a clean state
+                if (i > 0)
+                {
+                    await _page.ReloadAsync();
+                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                }
+                
+                await AddStudent(
+                    name: student.Name,
+                    studentId: student.Id,
+                    email: student.Email,
+                    phone: student.Phone
+                );
+                
+                // Verify student was added by checking for the student name and ID in the table
+                var studentRows = _page.Locator("tr", new() { HasText = student.Name }).Filter(new() { HasText = student.Id });
+                var studentRowCount = await studentRows.CountAsync();
+                System.Console.WriteLine($"Found {studentRowCount} rows containing '{student.Name}' and '{student.Id}'");
+                
+                // Verify at least one row exists with the student name and ID
+                Assert.IsTrue(studentRowCount > 0, $"Student {student.Name} with ID {student.Id} was not added successfully");
+            }
             
-            // Verify first student was added by checking for the student name and ID in the table
-            // Take a screenshot of the students table for debugging
-            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "students-table-after-first.png" });
+            // Step 2: Add 3 teachers
+            for (int i = 0; i < _teachers.Length; i++)
+            {
+                var teacher = _teachers[i];
+                System.Console.WriteLine($"Adding teacher {i+1}/{_teachers.Length}: {teacher.Name} ({teacher.Id})");
+                
+                // Reload the page to ensure we have a clean state
+                await _page.ReloadAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                
+                await AddTeacher(
+                    name: teacher.Name,
+                    teacherId: teacher.Id,
+                    email: teacher.Email,
+                    phone: teacher.Phone,
+                    subject: teacher.Subject
+                );
+                
+                // Verify teacher was added by checking for the teacher name and ID in the table
+                var teacherRows = _page.Locator("tr", new() { HasText = teacher.Name }).Filter(new() { HasText = teacher.Id });
+                var teacherRowCount = await teacherRows.CountAsync();
+                System.Console.WriteLine($"Found {teacherRowCount} rows containing '{teacher.Name}' and '{teacher.Id}'");
+                
+                // Verify at least one row exists with the teacher name and ID
+                Assert.IsTrue(teacherRowCount > 0, $"Teacher {teacher.Name} with ID {teacher.Id} was not added successfully");
+            }
             
-            // Print the HTML content of the table for debugging
-            var tableContent = await _page.Locator("table").InnerHTMLAsync();
-            System.Console.WriteLine($"Table content after adding first student: {tableContent.Substring(0, Math.Min(500, tableContent.Length))}...");
+            // Step 3: Add 2 classes
+            for (int i = 0; i < _classes.Length; i++)
+            {
+                var classData = _classes[i];
+                System.Console.WriteLine($"Adding class {i+1}/{_classes.Length}: {classData.Name} ({classData.Code})");
+                
+                // Reload the page to ensure we have a clean state
+                await _page.ReloadAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                
+                await AddClass(
+                    name: classData.Name,
+                    classCode: classData.Code,
+                    description: classData.Description
+                );
+                
+                // Verify class was added by checking for the class name and code in the table
+                var classRows = _page.Locator("tr", new() { HasText = classData.Name }).Filter(new() { HasText = classData.Code });
+                var classRowCount = await classRows.CountAsync();
+                System.Console.WriteLine($"Found {classRowCount} rows containing '{classData.Name}' and '{classData.Code}'");
+                
+                // Verify at least one row exists with the class name and code
+                Assert.IsTrue(classRowCount > 0, $"Class {classData.Name} with code {classData.Code} was not added successfully");
+            }
             
-            // Count the number of rows containing the student name and ID
-            var firstStudentRows = _page.Locator("tr", new() { HasText = firstStudentName }).Filter(new() { HasText = firstStudentId });
-            var firstStudentRowCount = await firstStudentRows.CountAsync();
-            System.Console.WriteLine($"Found {firstStudentRowCount} rows containing '{firstStudentName}' and '{firstStudentId}'");
+            // Step 4: Assign teachers to classes
+            for (int i = 0; i < _classes.Length; i++)
+            {
+                var classData = _classes[i];
+                var teacher = _teachers[i]; // Assign each teacher to a different class
+                System.Console.WriteLine($"Assigning teacher {teacher.Name} to class {classData.Name}");
+                
+                // Reload the page to ensure we have a clean state
+                await _page.ReloadAsync();
+                await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                
+                await AssignTeacherToClass(
+                    teacherName: teacher.Name,
+                    className: classData.Name
+                );
+                
+                // Verify teacher was assigned to the class
+                // This will depend on how the UI shows the assignment
+                // For now, we'll just check if the operation completed without errors
+            }
             
-            // Verify at least one row exists with the student name and ID
-            Assert.IsTrue(firstStudentRowCount > 0, $"Student {firstStudentName} with ID {firstStudentId} was not added successfully");
+            // Step 5: Assign students to classes
+            // For each class, assign 2 students
+            for (int i = 0; i < _classes.Length; i++)
+            {
+                var classData = _classes[i];
+                
+                // Assign 2 students to each class
+                for (int j = 0; j < 2; j++)
+                {
+                    var student = _students[j + i]; // Distribute students across classes
+                    if (j + i >= _students.Length)
+                    {
+                        student = _students[j]; // Wrap around if we run out of students
+                    }
+                    
+                    System.Console.WriteLine($"Assigning student {student.Name} to class {classData.Name}");
+                    
+                    // Reload the page to ensure we have a clean state
+                    await _page.ReloadAsync();
+                    await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                    
+                    await AssignStudentToClass(
+                        studentName: student.Name,
+                        className: classData.Name
+                    );
+                    
+                    // Verify student was assigned to the class
+                    // This will depend on how the UI shows the assignment
+                    // For now, we'll just check if the operation completed without errors
+                }
+            }
             
-            // Step 2: Add second student (Jane Doe)
-            string secondStudentName = "Jane Doe";
-            string secondStudentId = "S67890";
-            
-            // Reload the page to ensure we have a clean state
-            await _page.ReloadAsync();
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            
-            await AddStudent(
-                name: secondStudentName,
-                studentId: secondStudentId,
-                email: "jane.doe@example.com",
-                phone: "555-987-6543"
-            );
-            
-            // Verify second student was added by checking for the student name and ID in the table
-            // Take a screenshot of the students table for debugging
-            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "students-table-after-second.png" });
-            
-            // Count the number of rows containing the student name and ID
-            var secondStudentRows = _page.Locator("tr", new() { HasText = secondStudentName }).Filter(new() { HasText = secondStudentId });
-            var secondStudentRowCount = await secondStudentRows.CountAsync();
-            System.Console.WriteLine($"Found {secondStudentRowCount} rows containing '{secondStudentName}' and '{secondStudentId}'");
-            
-            // Verify at least one row exists with the student name and ID
-            Assert.IsTrue(secondStudentRowCount > 0, $"Student {secondStudentName} with ID {secondStudentId} was not added successfully");
-            
-            // Step 3: Add a class (Mathematics 101)
-            string className = "Mathematics 101";
-            string classCode = "MATH101";
-            
-            // Reload the page to ensure we have a clean state
-            await _page.ReloadAsync();
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            
-            await AddClass(
-                name: className,
-                classCode: classCode,
-                description: "An introductory course to basic mathematics concepts and principles."
-            );
-            
-            // Verify class was added by checking for the class name and code in the table
-            // Take a screenshot of the classes table for debugging
-            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "classes-table-after.png" });
-            
-            // Count the number of rows containing the class name and code
-            var classRows = _page.Locator("tr", new() { HasText = className }).Filter(new() { HasText = classCode });
-            var classRowCount = await classRows.CountAsync();
-            System.Console.WriteLine($"Found {classRowCount} rows containing '{className}' and '{classCode}'");
-            
-            // Verify at least one row exists with the class name and code
-            Assert.IsTrue(classRowCount > 0, $"Class {className} with code {classCode} was not added successfully");
+            // Take a final screenshot
+            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "final-state.png" });
+            System.Console.WriteLine("Final screenshot saved to final-state.png");
         }
         catch (System.Exception ex)
         {
@@ -257,6 +332,114 @@ public class SchoolManagementTests
         }
     }
     
+    private async Task AddTeacher(string name, string teacherId, string email, string phone, string subject)
+    {
+        try
+        {
+            // Make sure no modals are open
+            await CloseAnyOpenModals();
+            
+            // Navigate to Teachers page if not already there
+            // Use a more specific selector for the Teachers link in the navigation menu
+            var teachersLink = _page!.Locator("nav a.nav-link", new() { HasText = "Teachers" });
+            
+            // Use force option to bypass any intercepting elements
+            await teachersLink.ClickAsync(new LocatorClickOptions { Force = true });
+            
+            // Wait for the page to load
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            
+            // Take a screenshot for debugging
+            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"teachers-page-before-{teacherId}.png" });
+            
+            // Check if the page has a table already
+            var tableExists = await _page.Locator("table").IsVisibleAsync();
+            System.Console.WriteLine($"Table exists before adding teacher: {tableExists}");
+            
+            // Click "Add New Teacher" button with force option
+            await _page.GetByRole(AriaRole.Button, new() { Name = "Add New Teacher" }).ClickAsync(new LocatorClickOptions { Force = true });
+            
+            // Wait for the modal to appear with a specific title
+            // Use a more specific selector for the modal dialog
+            await _page.WaitForSelectorAsync("div.modal-header:has-text('Add Teacher')");
+            
+            // Take a screenshot of the modal
+            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"add-teacher-modal-{teacherId}.png" });
+            
+            // Use a more specific selector for the modal dialog
+            var addTeacherModal = _page.Locator("div.modal-content:has(div.modal-header:has-text('Add Teacher'))");
+            
+            // Print the HTML content of the modal for debugging
+            var modalContent = await addTeacherModal.InnerHTMLAsync();
+            System.Console.WriteLine($"Modal content for teacher {teacherId}: {modalContent.Substring(0, Math.Min(500, modalContent.Length))}...");
+            
+            // Find all input elements in the modal and print their IDs
+            var inputs = addTeacherModal.Locator("input");
+            var count = await inputs.CountAsync();
+            System.Console.WriteLine($"Found {count} input elements in the modal");
+            
+            for (int i = 0; i < count; i++)
+            {
+                var input = inputs.Nth(i);
+                var inputId = await input.GetAttributeAsync("id");
+                var inputName = await input.GetAttributeAsync("name");
+                var inputType = await input.GetAttributeAsync("type");
+                System.Console.WriteLine($"Input {i}: id={inputId}, name={inputName}, type={inputType}");
+            }
+            
+            // Use more specific selectors based on the actual IDs found in the modal
+            await addTeacherModal.Locator("input#name").FillAsync(name);
+            await addTeacherModal.Locator("input#teacherId").FillAsync(teacherId);
+            await addTeacherModal.Locator("input#email").FillAsync(email);
+            await addTeacherModal.Locator("input#phoneNumber").FillAsync(phone);
+            await addTeacherModal.Locator("input#subject").FillAsync(subject);
+            
+            // Take a screenshot before submitting
+            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"add-teacher-form-{teacherId}.png" });
+            
+            // Submit the form with force option
+            var addButton = addTeacherModal.Locator("button:has-text('Add Teacher')");
+            System.Console.WriteLine($"Add button exists: {await addButton.IsVisibleAsync()}");
+            await addButton.ClickAsync(new LocatorClickOptions { Force = true });
+            
+            // Wait for the modal to close
+            System.Console.WriteLine("Waiting for modal to close...");
+            await _page.WaitForSelectorAsync(".modal.show", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden, Timeout = 10000 });
+            System.Console.WriteLine("Modal closed");
+            
+            // Wait for the page to load
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            
+            // Take a screenshot after submitting
+            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"teachers-page-after-submit-{teacherId}.png" });
+            
+            // Wait for the teacher list to update with a longer timeout
+            System.Console.WriteLine("Waiting for table to be visible...");
+            await _page.WaitForSelectorAsync("table", new PageWaitForSelectorOptions { Timeout = 60000 });
+            System.Console.WriteLine("Table is visible");
+            
+            // Take a screenshot after adding
+            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"teachers-page-after-{teacherId}.png" });
+            
+            // Print the HTML content of the page for debugging
+            var pageContent = await _page.ContentAsync();
+            System.Console.WriteLine($"Page content after adding teacher: {pageContent.Substring(0, Math.Min(500, pageContent.Length))}...");
+        }
+        catch (System.Exception ex)
+        {
+            // Take a screenshot on error
+            await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = $"error-add-teacher-{teacherId}.png" });
+            System.Console.WriteLine($"Error screenshot saved to error-add-teacher-{teacherId}.png");
+            System.Console.WriteLine($"Error adding teacher {name} with ID {teacherId}: {ex.Message}");
+            
+            // Print the HTML content of the page for debugging
+            var pageContent = await _page.ContentAsync();
+            System.Console.WriteLine($"Page content on error: {pageContent.Substring(0, Math.Min(500, pageContent.Length))}...");
+            
+            throw;
+        }
+    }
+    
     private async Task AddStudent(string name, string studentId, string email, string phone)
     {
         try
@@ -276,6 +459,10 @@ public class SchoolManagementTests
             
             // Take a screenshot for debugging
             await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"students-page-before-{studentId}.png" });
+            
+            // Check if the page has a table already
+            var tableExists = await _page.Locator("table").IsVisibleAsync();
+            System.Console.WriteLine($"Table exists before adding student: {tableExists}");
             
             // Click "Add New Student" button with force option
             await _page.GetByRole(AriaRole.Button, new() { Name = "Add New Student" }).ClickAsync(new LocatorClickOptions { Force = true });
@@ -319,13 +506,32 @@ public class SchoolManagementTests
             await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"add-student-form-{studentId}.png" });
             
             // Submit the form with force option
-            await addStudentModal.Locator("button:has-text('Add Student')").ClickAsync(new LocatorClickOptions { Force = true });
+            var addButton = addStudentModal.Locator("button:has-text('Add Student')");
+            System.Console.WriteLine($"Add button exists: {await addButton.IsVisibleAsync()}");
+            await addButton.ClickAsync(new LocatorClickOptions { Force = true });
             
-            // Wait for the student list to update
-            await _page.WaitForSelectorAsync("table");
+            // Wait for the modal to close
+            System.Console.WriteLine("Waiting for modal to close...");
+            await _page.WaitForSelectorAsync(".modal.show", new PageWaitForSelectorOptions { State = WaitForSelectorState.Hidden, Timeout = 10000 });
+            System.Console.WriteLine("Modal closed");
+            
+            // Wait for the page to load
+            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            
+            // Take a screenshot after submitting
+            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"students-page-after-submit-{studentId}.png" });
+            
+            // Wait for the student list to update with a longer timeout
+            System.Console.WriteLine("Waiting for table to be visible...");
+            await _page.WaitForSelectorAsync("table", new PageWaitForSelectorOptions { Timeout = 60000 });
+            System.Console.WriteLine("Table is visible");
             
             // Take a screenshot after adding
             await _page.ScreenshotAsync(new PageScreenshotOptions { Path = $"students-page-after-{studentId}.png" });
+            
+            // Print the HTML content of the page for debugging
+            var pageContent = await _page.ContentAsync();
+            System.Console.WriteLine($"Page content after adding student: {pageContent.Substring(0, Math.Min(500, pageContent.Length))}...");
         }
         catch (System.Exception ex)
         {
@@ -333,84 +539,11 @@ public class SchoolManagementTests
             await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = $"error-add-student-{studentId}.png" });
             System.Console.WriteLine($"Error screenshot saved to error-add-student-{studentId}.png");
             System.Console.WriteLine($"Error adding student {name} with ID {studentId}: {ex.Message}");
-            throw;
-        }
-    }
-    
-    private async Task AddClass(string name, string classCode, string description)
-    {
-        try
-        {
-            // Make sure no modals are open
-            await CloseAnyOpenModals();
             
-            // Navigate to Classes page
-            // Use a more specific selector for the Classes link in the navigation menu
-            var classesLink = _page!.Locator("nav a.nav-link", new() { HasText = "Classes" });
+            // Print the HTML content of the page for debugging
+            var pageContent = await _page.ContentAsync();
+            System.Console.WriteLine($"Page content on error: {pageContent.Substring(0, Math.Min(500, pageContent.Length))}...");
             
-            // Use force option to bypass any intercepting elements
-            await classesLink.ClickAsync(new LocatorClickOptions { Force = true });
-            
-            // Wait for the page to load
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            
-            // Take a screenshot for debugging
-            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "classes-page-before.png" });
-            
-            // Click "Add New Class" button with force option
-            await _page.GetByRole(AriaRole.Button, new() { Name = "Add New Class" }).ClickAsync(new LocatorClickOptions { Force = true });
-            
-            // Wait for the modal to appear with a specific title
-            // Use a more specific selector for the modal dialog
-            await _page.WaitForSelectorAsync("div.modal-header:has-text('Add Class')");
-            
-            // Take a screenshot of the modal
-            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "add-class-modal.png" });
-            
-            // Use a more specific selector for the modal dialog
-            var addClassModal = _page.Locator("div.modal-content:has(div.modal-header:has-text('Add Class'))");
-            
-            // Print the HTML content of the modal for debugging
-            var modalContent = await addClassModal.InnerHTMLAsync();
-            System.Console.WriteLine($"Modal content for class {classCode}: {modalContent.Substring(0, Math.Min(500, modalContent.Length))}...");
-            
-            // Find all input elements in the modal and print their IDs
-            var inputs = addClassModal.Locator("input, textarea");
-            var count = await inputs.CountAsync();
-            System.Console.WriteLine($"Found {count} input elements in the modal");
-            
-            for (int i = 0; i < count; i++)
-            {
-                var input = inputs.Nth(i);
-                var inputId = await input.GetAttributeAsync("id");
-                var inputName = await input.GetAttributeAsync("name");
-                var inputType = await input.GetAttributeAsync("type");
-                System.Console.WriteLine($"Input {i}: id={inputId}, name={inputName}, type={inputType}");
-            }
-            
-            // Use more specific selectors based on the actual IDs found in the modal
-            await addClassModal.Locator("input#name").FillAsync(name);
-            await addClassModal.Locator("input#classCode").FillAsync(classCode);
-            await addClassModal.Locator("textarea#description").FillAsync(description);
-            
-            // Take a screenshot before submitting
-            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "add-class-form.png" });
-            
-            // Submit the form with force option
-            await addClassModal.Locator("button:has-text('Add Class')").ClickAsync(new LocatorClickOptions { Force = true });
-            
-            // Wait for the class list to update
-            await _page.WaitForSelectorAsync("table");
-            
-            // Take a screenshot after adding
-            await _page.ScreenshotAsync(new PageScreenshotOptions { Path = "classes-page-after.png" });
-        }
-        catch (System.Exception ex)
-        {
-            // Take a screenshot on error
-            await _page!.ScreenshotAsync(new PageScreenshotOptions { Path = "error-add-class.png" });
-            System.Console.WriteLine($"Error screenshot saved to error-add-class.png");
-            System.Console.WriteLine($"Error adding class {name} with code {classCode}: {ex.Message}");
             throw;
         }
     }

@@ -12,14 +12,25 @@ This project contains automated UI tests for the SchoolManagement application us
 The test suite automates the following actions:
 
 1. Navigates to the SchoolManagement application
-2. Adds two student records:
+2. Adds 3 student records:
    - John Smith (ID: S12345)
    - Jane Doe (ID: S67890)
-3. Adds a class:
+   - Michael Johnson (ID: S24680)
+3. Adds 3 teacher records:
+   - Dr. Robert Brown (ID: T12345, Subject: Mathematics)
+   - Prof. Sarah Wilson (ID: T67890, Subject: Science)
+   - Ms. Emily Davis (ID: T24680, Subject: English)
+4. Adds 2 classes:
    - Mathematics 101 (Code: MATH101)
-4. Verifies that all records were added successfully
+   - Science 101 (Code: SCI101)
+5. Assigns teachers to classes:
+   - Dr. Robert Brown to Mathematics 101
+   - Prof. Sarah Wilson to Science 101
+6. Assigns students to classes:
+   - John Smith and Jane Doe to Mathematics 101
+   - Jane Doe and Michael Johnson to Science 101
 
-This test validates the core functionality of adding students and classes to the system.
+This test validates the core functionality of adding students, teachers, and classes to the system, as well as assigning teachers and students to classes.
 
 ## Running the Tests
 
@@ -76,12 +87,23 @@ The test generates several screenshots during execution to help with debugging:
 - `add-student-modal-*.png`: The Add Student modal dialog
 - `add-student-form-*.png`: The Add Student form after filling in the details
 - `students-page-after-*.png`: The Students page after adding a student
-- `students-table-after-*.png`: The Students table after adding a student
-- `classes-page-before.png`: The Classes page before adding a class
-- `add-class-modal.png`: The Add Class modal dialog
-- `add-class-form.png`: The Add Class form after filling in the details
-- `classes-page-after.png`: The Classes page after adding a class
-- `classes-table-after.png`: The Classes table after adding a class
+- `teachers-page-before-*.png`: The Teachers page before adding a teacher
+- `add-teacher-modal-*.png`: The Add Teacher modal dialog
+- `add-teacher-form-*.png`: The Add Teacher form after filling in the details
+- `teachers-page-after-*.png`: The Teachers page after adding a teacher
+- `classes-page-before-*.png`: The Classes page before adding a class
+- `add-class-modal-*.png`: The Add Class modal dialog
+- `add-class-form-*.png`: The Add Class form after filling in the details
+- `classes-page-after-*.png`: The Classes page after adding a class
+- `classes-page-before-assign-teacher-*.png`: The Classes page before assigning a teacher
+- `assign-teacher-modal-*.png`: The Assign Teacher modal dialog
+- `assign-teacher-form-*.png`: The Assign Teacher form after selecting a teacher
+- `classes-page-after-assign-teacher-*.png`: The Classes page after assigning a teacher
+- `classes-page-before-assign-student-*.png`: The Classes page before assigning a student
+- `assign-student-modal-*.png`: The Assign Student modal dialog
+- `assign-student-form-*.png`: The Assign Student form after selecting a student
+- `classes-page-after-assign-student-*.png`: The Classes page after assigning a student
+- `final-state.png`: The final state of the application after all operations
 - `error-*.png`: Screenshots taken when an error occurs
 
 Additionally, the test outputs detailed information to the console, including:
