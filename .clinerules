@@ -5,12 +5,13 @@ cd SchoolManagement/SchoolManagement.AppHost
 dotnet run --launch-profile https
 
 whenever code changes, it does not update program, you need to quit and run again.
-you can kill process for 'dcp' and 'dotnet'
+you can kill process that names "SchoolManagement."
 
 Web Frontend can access following url:
 https://localhost:7201
 
 When cline open up browser, use high resolution like Full HD.
+Use Large Desktop (1280x800) as Browser BROWSER_VIEWPORT_PRESETS for Computer Use
 
 # document
 How to use Event Sourcing with Sekiban will be in the document below

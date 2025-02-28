@@ -26,7 +26,8 @@ var apiService = builder.AddProject<SchoolManagement_ApiService>("apiservice")
     // .WithEndpoint("https", annotation => annotation.IsProxied = false)
     .WithReference(postgres)
     .WithReference(orleans)
-    .WithReplicas(2);
+    //.WithReplicas(2)
+    ;
 
 builder.AddProject<Projects.SchoolManagement_Web>("webfrontend")
     .WithExternalHttpEndpoints()
