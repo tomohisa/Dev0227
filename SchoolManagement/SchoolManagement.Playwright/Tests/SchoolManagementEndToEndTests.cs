@@ -348,7 +348,7 @@ namespace SchoolManagement.Playwright.Tests
                         System.Console.WriteLine($"  Starting teacher assignment process...");
                         var assignStopwatch = Stopwatch.StartNew();
                         await _classesPage.AssignTeacherToClass(
-                            teacherName: teacher.Name,
+                            index: i + 1,
                             className: classData.Name
                         );
                         assignStopwatch.Stop();

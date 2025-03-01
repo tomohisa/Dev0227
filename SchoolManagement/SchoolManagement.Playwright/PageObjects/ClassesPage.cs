@@ -153,41 +153,50 @@ namespace SchoolManagement.Playwright.PageObjects
             await VerifyClassAdded(name, classCode);
         }
 
-        public async Task ClickAssignTeacherButton(string className)
-        {
-            System.Console.WriteLine("  [ClassesPage] Clicking Assign Teacher button");
-            var sw = Stopwatch.StartNew();
-            
-            var classRow = _page.Locator("tr", new() { HasText = className });
-            System.Console.WriteLine($"  [ClassesPage] Found class row in {sw.ElapsedMilliseconds}ms");
-            
-            await classRow.Locator("button:has-text('Assign Teacher')").ClickAsync(new LocatorClickOptions { Force = true });
-            System.Console.WriteLine($"  [ClassesPage] Clicked Assign Teacher button in {sw.ElapsedMilliseconds}ms");
-            
-            await _page.WaitForSelectorAsync("div.modal-header:has-text('Assign Teacher')");
-            System.Console.WriteLine($"  [ClassesPage] Modal appeared in {sw.ElapsedMilliseconds}ms");
-            
-            sw.Stop();
-            System.Console.WriteLine($"  [ClassesPage] Assign Teacher button click completed in {sw.ElapsedMilliseconds}ms");
-        }
+    public async Task SelectTeacherFromDropdown(int index)
+    {
+        await Task.Delay(500);
+        System.Console.WriteLine("  [ClassesPage] Selecting teacher from dropdown");
+        var sw = Stopwatch.StartNew();
+        
+        // Use specific ID selector for teacher dropdown instead of generic "select"
+        var teacherDropdown = _page.Locator("select#teacherId");
+        System.Console.WriteLine($"  [ClassesPage] Found teacher dropdown in {sw.ElapsedMilliseconds}ms");
+        
+        // "select#teacherId" に対して2個目のオプションを選択する
+        await _page.SelectOptionAsync("select#teacherId", new SelectOptionValue { Index = index });
+        
+        // // Get all options and find one that contains the teacher name (not exact match)
+        // var options = await teacherDropdown.Locator("option").AllAsync();
+        // System.Console.WriteLine($"  [ClassesPage] Found {options.Count} options in {sw.ElapsedMilliseconds}ms");
+        //
+        // string optionValue = null;
+        // foreach (var option in options)
+        // {
+        //     var text = await option.TextContentAsync();
+        //     if (text != null && text.Contains(teacherName, StringComparison.OrdinalIgnoreCase))
+        //     {
+        //         optionValue = await option.GetAttributeAsync("value");
+        //         System.Console.WriteLine($"  [ClassesPage] Found matching option with value: {optionValue} in {sw.ElapsedMilliseconds}ms");
+        //         break;
+        //     }
+        // }
+        //
+        // if (optionValue == null)
+        // {
+        //     throw new Exception($"Could not find teacher option containing '{teacherName}'");
+        // }
+        //
+        // await teacherDropdown.SelectOptionAsync(new[] { optionValue });
+        // System.Console.WriteLine($"  [ClassesPage] Selected teacher option in {sw.ElapsedMilliseconds}ms");
 
-        public async Task SelectTeacherFromDropdown(string teacherName)
-        {
-            System.Console.WriteLine("  [ClassesPage] Selecting teacher from dropdown");
-            var sw = Stopwatch.StartNew();
-            
-            var assignTeacherModal = _page.Locator("#manageClassModal");
-            System.Console.WriteLine($"  [ClassesPage] Found modal in {sw.ElapsedMilliseconds}ms");
-            
-            var teacherDropdown = assignTeacherModal.Locator("select");
-            System.Console.WriteLine($"  [ClassesPage] Found dropdown in {sw.ElapsedMilliseconds}ms");
-            
-            await teacherDropdown.SelectOptionAsync(new[] { teacherName });
-            System.Console.WriteLine($"  [ClassesPage] Selected teacher option in {sw.ElapsedMilliseconds}ms");
-            
-            sw.Stop();
-            System.Console.WriteLine($"  [ClassesPage] Teacher selection completed in {sw.ElapsedMilliseconds}ms");
-        }
+        var assignButton = _page.Locator("button:has-text('Assign')");
+        // click the assign button
+        await assignButton.ClickAsync(new LocatorClickOptions { Force = true });
+        System.Console.WriteLine($"  [ClassesPage] Clicked Assign button in {sw.ElapsedMilliseconds}ms");
+        sw.Stop();
+        System.Console.WriteLine($"  [ClassesPage] Teacher selection completed in {sw.ElapsedMilliseconds}ms");
+    }
 
         public async Task SubmitAssignTeacherForm()
         {
@@ -235,13 +244,17 @@ namespace SchoolManagement.Playwright.PageObjects
             System.Console.WriteLine($"  [ClassesPage] Form submission completed in {sw.ElapsedMilliseconds}ms");
         }
 
-        public async Task AssignTeacherToClass(string teacherName, string className)
+        public async Task AssignTeacherToClass(int index, string className)
         {
-            System.Console.WriteLine($"  [ClassesPage] Starting to assign teacher '{teacherName}' to class '{className}'");
+            System.Console.WriteLine($"  [ClassesPage] Starting to assign teacher '{index}' to class '{className}'");
             var totalSw = Stopwatch.StartNew();
             
-            await SelectTeacherFromDropdown(teacherName);
-            await SubmitAssignTeacherForm();
+            await SelectTeacherFromDropdown(index);
+            
+            // click esc to close modal
+            await _page.Keyboard.PressAsync("Escape");
+            // wait 500 ms
+            await Task.Delay(500);
             
             totalSw.Stop();
             System.Console.WriteLine($"  [ClassesPage] Teacher assignment completed in {totalSw.ElapsedMilliseconds}ms");
@@ -273,10 +286,32 @@ namespace SchoolManagement.Playwright.PageObjects
             var assignStudentModal = _page.Locator("div.modal-content:has(div.modal-header:has-text('Assign Student'))");
             System.Console.WriteLine($"  [ClassesPage] Found modal in {sw.ElapsedMilliseconds}ms");
             
-            var studentDropdown = assignStudentModal.Locator("select");
-            System.Console.WriteLine($"  [ClassesPage] Found dropdown in {sw.ElapsedMilliseconds}ms");
+            // Use specific ID selector for student dropdown instead of generic "select"
+            var studentDropdown = assignStudentModal.Locator("#studentId");
+            System.Console.WriteLine($"  [ClassesPage] Found student dropdown in {sw.ElapsedMilliseconds}ms");
             
-            await studentDropdown.SelectOptionAsync(new[] { studentName });
+            // Get all options and find one that contains the student name (not exact match)
+            var options = await studentDropdown.Locator("option").AllAsync();
+            System.Console.WriteLine($"  [ClassesPage] Found {options.Count} options in {sw.ElapsedMilliseconds}ms");
+            
+            string optionValue = null;
+            foreach (var option in options)
+            {
+                var text = await option.TextContentAsync();
+                if (text != null && text.Contains(studentName, StringComparison.OrdinalIgnoreCase))
+                {
+                    optionValue = await option.GetAttributeAsync("value");
+                    System.Console.WriteLine($"  [ClassesPage] Found matching option with value: {optionValue} in {sw.ElapsedMilliseconds}ms");
+                    break;
+                }
+            }
+            
+            if (optionValue == null)
+            {
+                throw new Exception($"Could not find student option containing '{studentName}'");
+            }
+            
+            await studentDropdown.SelectOptionAsync(new[] { optionValue });
             System.Console.WriteLine($"  [ClassesPage] Selected student option in {sw.ElapsedMilliseconds}ms");
             
             sw.Stop();
