@@ -124,9 +124,9 @@ namespace SchoolManagement.Playwright.PageObjects
             
             try {
                 var modalCloseSw = Stopwatch.StartNew();
-                await _page.WaitForSelectorAsync(".modal.show", new PageWaitForSelectorOptions { 
-                    State = WaitForSelectorState.Hidden, 
-                    Timeout = 30000 
+                await _page.WaitForSelectorAsync("#addTeacherModal:not(.show)", new PageWaitForSelectorOptions { 
+                    State = WaitForSelectorState.Visible, 
+                    Timeout = 1000 
                 });
                 modalCloseSw.Stop();
                 System.Console.WriteLine($"  [TeachersPage] Modal closed in {modalCloseSw.ElapsedMilliseconds}ms");
@@ -134,7 +134,7 @@ namespace SchoolManagement.Playwright.PageObjects
                 System.Console.WriteLine($"  [TeachersPage] Modal did not close: {ex.Message}");
                 System.Console.WriteLine($"  [TeachersPage] Attempting to force close modal after {sw.ElapsedMilliseconds}ms");
                 
-                await _page.EvaluateAsync("document.querySelector('.modal.show .btn-close')?.click()");
+                await _page.EvaluateAsync("document.querySelector('#addTeacherModal.show .btn-close')?.click()");
                 System.Console.WriteLine($"  [TeachersPage] Clicked close button via JS in {sw.ElapsedMilliseconds}ms");
                 
                 await Task.Delay(1000);
