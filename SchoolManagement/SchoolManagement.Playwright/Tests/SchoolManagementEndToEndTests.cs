@@ -391,19 +391,7 @@ namespace SchoolManagement.Playwright.Tests
                         
                         var student = TestData.Students[studentIndex];
                         System.Console.WriteLine($"Assigning student {student.Name} to class {classData.Name}");
-                        
-                        // Always reload the page before assigning a student to ensure a clean state
-                        System.Console.WriteLine($"  Reloading page before student assignment...");
-                        var reloadStopwatch = Stopwatch.StartNew();
-                        await Page!.ReloadAsync();
-                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                        reloadStopwatch.Stop();
-                        System.Console.WriteLine($"  Page reload completed in {reloadStopwatch.ElapsedMilliseconds}ms");
-                        
-                        // Add a longer delay to ensure the page is fully loaded and ready
-                        System.Console.WriteLine($"  Waiting 2000ms after reload...");
-                        await Task.Delay(2000);
-                        
+                        await Task.Delay(500);
                         // Time the entire student assignment process
                         operationStopwatch.Restart();
                         
@@ -428,38 +416,32 @@ namespace SchoolManagement.Playwright.Tests
                             // Wait for the Assign Student button to be visible
                             System.Console.WriteLine($"  Waiting for Assign Student button to be visible...");
                             var buttonStopwatch = Stopwatch.StartNew();
-                            var assignButton = classRow.Locator("button:has-text('Assign Student')");
+                            var assignButton = classRow.Locator("button:has-text('Manage')");
                             await assignButton.WaitForAsync(new() { Timeout = 30000 });
+                            await assignButton.ClickAsync(new LocatorClickOptions { Force = true });
                             buttonStopwatch.Stop();
                             System.Console.WriteLine($"  Assign Student button became visible in {buttonStopwatch.ElapsedMilliseconds}ms");
                             
-                            // Click the Assign Student button
-                            System.Console.WriteLine($"  Clicking Assign Student button...");
-                            var clickStopwatch = Stopwatch.StartNew();
-                            await assignButton.ClickAsync(new LocatorClickOptions { Force = true });
-                            clickStopwatch.Stop();
-                            System.Console.WriteLine($"  Assign Student button clicked in {clickStopwatch.ElapsedMilliseconds}ms");
+                            await Task.Delay(500);
                             
-                            // Wait for the modal to appear
-                            System.Console.WriteLine($"  Waiting for Assign Student modal to appear...");
-                            var modalStopwatch = Stopwatch.StartNew();
-                            await Page.WaitForSelectorAsync("div.modal-header:has-text('Assign Student')", new PageWaitForSelectorOptions { Timeout = 30000 });
-                            modalStopwatch.Stop();
-                            System.Console.WriteLine($"  Assign Student modal appeared in {modalStopwatch.ElapsedMilliseconds}ms");
+                            // find students-tab button and click
+                            var studentsTab = Page.Locator("button:has-text('Students')");
+                            await studentsTab.ClickAsync(new LocatorClickOptions { Force = true });
+                            await Task.Delay(500);
                             
-                            // Select student from dropdown
-                            System.Console.WriteLine($"  Selecting student from dropdown...");
-                            var selectStopwatch = Stopwatch.StartNew();
-                            await _classesPage.SelectStudentFromDropdown(student.Name);
-                            selectStopwatch.Stop();
-                            System.Console.WriteLine($"  Student selection completed in {selectStopwatch.ElapsedMilliseconds}ms");
-                            
-                            // Submit the form
-                            System.Console.WriteLine($"  Submitting assign student form...");
-                            var submitStopwatch = Stopwatch.StartNew();
-                            await _classesPage.SubmitAssignStudentForm();
-                            submitStopwatch.Stop();
-                            System.Console.WriteLine($"  Form submission completed in {submitStopwatch.ElapsedMilliseconds}ms");
+                            // find student selector and select by index
+                            var studentSelector = Page.Locator("select[name='AddStudentModel.StudentId']");
+                            await studentSelector.SelectOptionAsync(new SelectOptionValue() { Index = j + 1 });
+                            await Task.Delay(500);
+                            // find student tab pane students-tab-pane
+                            var studentTabPane = Page.Locator("div#students-tab-pane");
+                            // click add button
+                            var addButton = studentTabPane.Locator("button:has-text('Add')");
+                            await addButton.ClickAsync(new LocatorClickOptions { Force = true });
+                            await Task.Delay(500);
+                            // click esc key
+                            await Page!.Keyboard.PressAsync("Escape");
+                            await Task.Delay(500);
                             
                             operationStopwatch.Stop();
                             System.Console.WriteLine($"  Total time to assign student: {operationStopwatch.ElapsedMilliseconds}ms");
