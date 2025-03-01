@@ -1,3 +1,7 @@
+# Basic
+Do exactly what I ask. You are assisting, do not break current feature without being asked.
+Just suggest if you think about better refactoring.
+
 # debug
 
 Execute Project host with Aspire - this open db, api, and web project with Host.

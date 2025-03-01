@@ -161,7 +161,9 @@ namespace SchoolManagement.Playwright.Tests
                     
                     Assert.That(isStudentAdded, Is.True, $"Student {student.Name} with ID {student.Id} was not added successfully");
                 }
-                
+                // click esc key 
+                await Page!.Keyboard.PressAsync("Escape");
+                await Task.Delay(500);
                 // Step 2: Add 3 teachers
                 System.Console.WriteLine("\n=== ADDING TEACHERS ===");
                 // Navigate to Teachers page
@@ -238,7 +240,16 @@ namespace SchoolManagement.Playwright.Tests
                     
                     Assert.That(isTeacherAdded, Is.True, $"Teacher {teacher.Name} with ID {teacher.Id} was not added successfully");
                 }
-                
+
+                // click esc key 
+                await Page!.Keyboard.PressAsync("Escape");
+                await Task.Delay(500);
+                System.Console.WriteLine($"  Navigating to Classes page...");
+                navStopwatch = Stopwatch.StartNew();
+                await _classesPage.NavigateToClassesPage();
+                await Task.Delay(500);
+                navStopwatch.Stop();
+
                 // Step 3: Add 2 classes
                 System.Console.WriteLine("\n=== ADDING CLASSES ===");
                 for (int i = 0; i < TestData.Classes.Length; i++)
@@ -290,6 +301,9 @@ namespace SchoolManagement.Playwright.Tests
                 // Step 4: Assign teachers to classes
                 System.Console.WriteLine("\n=== ASSIGNING TEACHERS TO CLASSES ===");
                 // Navigate to Classes page
+                // click esc key 
+                await Page!.Keyboard.PressAsync("Escape");
+                await Task.Delay(500);
                 System.Console.WriteLine($"  Navigating to Classes page...");
                 navStopwatch = Stopwatch.StartNew();
                 await _classesPage.NavigateToClassesPage();

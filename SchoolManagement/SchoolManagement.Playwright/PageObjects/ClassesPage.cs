@@ -176,7 +176,7 @@ namespace SchoolManagement.Playwright.PageObjects
             System.Console.WriteLine("  [ClassesPage] Selecting teacher from dropdown");
             var sw = Stopwatch.StartNew();
             
-            var assignTeacherModal = _page.Locator("div.modal-content:has(div.modal-header:has-text('Assign Teacher'))");
+            var assignTeacherModal = _page.Locator("#manageClassModal");
             System.Console.WriteLine($"  [ClassesPage] Found modal in {sw.ElapsedMilliseconds}ms");
             
             var teacherDropdown = assignTeacherModal.Locator("select");
@@ -240,7 +240,6 @@ namespace SchoolManagement.Playwright.PageObjects
             System.Console.WriteLine($"  [ClassesPage] Starting to assign teacher '{teacherName}' to class '{className}'");
             var totalSw = Stopwatch.StartNew();
             
-            await ClickAssignTeacherButton(className);
             await SelectTeacherFromDropdown(teacherName);
             await SubmitAssignTeacherForm();
             
