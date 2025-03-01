@@ -4,6 +4,7 @@ using SchoolManagement.Playwright.Base;
 using SchoolManagement.Playwright.Helpers;
 using SchoolManagement.Playwright.PageObjects;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace SchoolManagement.Playwright.Tests
@@ -18,38 +19,84 @@ namespace SchoolManagement.Playwright.Tests
         [SetUp]
         public async Task TestSetUp()
         {
+            System.Console.WriteLine("=== TEST SETUP PERFORMANCE DEBUGGING ===");
+            var totalSetupSw = Stopwatch.StartNew();
+            
             // Navigate to the application
+            System.Console.WriteLine("Navigating to application URL...");
+            var navigationSw = Stopwatch.StartNew();
             await Page!.GotoAsync(BaseUrl);
+            navigationSw.Stop();
+            System.Console.WriteLine($"Initial navigation completed in {navigationSw.ElapsedMilliseconds}ms");
             
             // Wait for the page to load
+            System.Console.WriteLine("Waiting for network idle...");
+            var networkSw = Stopwatch.StartNew();
             await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            networkSw.Stop();
+            System.Console.WriteLine($"Network idle reached in {networkSw.ElapsedMilliseconds}ms");
             
             // Print the page title for debugging
-            System.Console.WriteLine($"Page title: {await Page.TitleAsync()}");
+            var titleSw = Stopwatch.StartNew();
+            var pageTitle = await Page.TitleAsync();
+            titleSw.Stop();
+            System.Console.WriteLine($"Page title: {pageTitle} (retrieved in {titleSw.ElapsedMilliseconds}ms)");
             
             // Take a screenshot for debugging
+            System.Console.WriteLine("Taking screenshot...");
+            var screenshotSw = Stopwatch.StartNew();
             await Page.ScreenshotAsync(new PageScreenshotOptions { Path = "homepage.png" });
-            System.Console.WriteLine("Screenshot saved to homepage.png");
+            screenshotSw.Stop();
+            System.Console.WriteLine($"Screenshot saved to homepage.png in {screenshotSw.ElapsedMilliseconds}ms");
             
             // Initialize page objects
+            System.Console.WriteLine("Initializing page objects...");
+            var initSw = Stopwatch.StartNew();
             _studentsPage = new StudentsPage(Page);
             _teachersPage = new TeachersPage(Page);
             _classesPage = new ClassesPage(Page);
+            initSw.Stop();
+            System.Console.WriteLine($"Page objects initialized in {initSw.ElapsedMilliseconds}ms");
             
             // Verify the page has loaded by checking for the presence of navigation elements
+            System.Console.WriteLine("Verifying page has loaded...");
+            var verifySw = Stopwatch.StartNew();
             var studentsNavLink = Page.Locator("nav a.nav-link", new() { HasText = "Students" });
+            System.Console.WriteLine($"Students nav link located in {verifySw.ElapsedMilliseconds}ms");
             
             // Wait for the navigation link to be visible
+            var waitSw = Stopwatch.StartNew();
             await studentsNavLink.WaitForAsync(new() { Timeout = 10000 });
-            Assert.That(await studentsNavLink.IsVisibleAsync(), Is.True, "Students navigation link is not visible");
+            waitSw.Stop();
+            System.Console.WriteLine($"Waited for Students nav link to be visible in {waitSw.ElapsedMilliseconds}ms");
+            
+            var visibleSw = Stopwatch.StartNew();
+            var isVisible = await studentsNavLink.IsVisibleAsync();
+            visibleSw.Stop();
+            System.Console.WriteLine($"Checked if Students nav link is visible in {visibleSw.ElapsedMilliseconds}ms");
+            
+            Assert.That(isVisible, Is.True, "Students navigation link is not visible");
+            
+            verifySw.Stop();
+            System.Console.WriteLine($"Page verification completed in {verifySw.ElapsedMilliseconds}ms");
+            
+            totalSetupSw.Stop();
+            System.Console.WriteLine($"Total test setup time: {totalSetupSw.ElapsedMilliseconds}ms");
         }
 
         [Test]
         public async Task SchoolManagementEndToEndTest()
         {
+            // Create a stopwatch for timing operations
+            var totalStopwatch = Stopwatch.StartNew();
+            var operationStopwatch = new Stopwatch();
+            
             try
             {
+                System.Console.WriteLine("=== PERFORMANCE DEBUGGING ===");
+                System.Console.WriteLine("Starting end-to-end test");
                 // Step 1: Add 3 students
+                System.Console.WriteLine("\n=== ADDING STUDENTS ===");
                 for (int i = 0; i < TestData.Students.Length; i++)
                 {
                     var student = TestData.Students[i];
@@ -59,25 +106,64 @@ namespace SchoolManagement.Playwright.Tests
                     // This helps avoid timing issues with the UI
                     if (i > 0)
                     {
-                        await Page!.ReloadAsync();
-                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        // await Page!.ReloadAsync();
+                        // await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                         // Add a small delay to ensure the page is fully loaded and ready
+                        System.Console.WriteLine($"  Waiting 1000ms before adding next student...");
                         await Task.Delay(1000);
                     }
                     
-                    await _studentsPage.AddStudent(
+                    // Time the entire student addition process
+                    operationStopwatch.Restart();
+                    
+                    // Navigate to Students page
+                    System.Console.WriteLine($"  Navigating to Students page...");
+                    var navStopwatch = Stopwatch.StartNew();
+                    await _studentsPage.NavigateToStudentsPage();
+                    navStopwatch.Stop();
+                    System.Console.WriteLine($"  Navigation completed in {navStopwatch.ElapsedMilliseconds}ms");
+                    
+                    // Click Add New Student button
+                    System.Console.WriteLine($"  Clicking Add New Student button...");
+                    var buttonStopwatch = Stopwatch.StartNew();
+                    await _studentsPage.ClickAddNewStudentButton();
+                    buttonStopwatch.Stop();
+                    System.Console.WriteLine($"  Button click completed in {buttonStopwatch.ElapsedMilliseconds}ms");
+                    
+                    // Fill student form
+                    System.Console.WriteLine($"  Filling student form...");
+                    var formStopwatch = Stopwatch.StartNew();
+                    await _studentsPage.FillStudentForm(
                         name: student.Name,
                         studentId: student.Id,
                         email: student.Email,
                         phone: student.Phone
                     );
+                    formStopwatch.Stop();
+                    System.Console.WriteLine($"  Form filling completed in {formStopwatch.ElapsedMilliseconds}ms");
+                    
+                    // Submit student form
+                    System.Console.WriteLine($"  Submitting student form...");
+                    var submitStopwatch = Stopwatch.StartNew();
+                    await _studentsPage.SubmitStudentForm();
+                    submitStopwatch.Stop();
+                    System.Console.WriteLine($"  Form submission completed in {submitStopwatch.ElapsedMilliseconds}ms");
                     
                     // Verify student was added
+                    System.Console.WriteLine($"  Verifying student was added...");
+                    var verifyStopwatch = Stopwatch.StartNew();
                     var isStudentAdded = await _studentsPage.VerifyStudentAdded(student.Name, student.Id);
+                    verifyStopwatch.Stop();
+                    System.Console.WriteLine($"  Verification completed in {verifyStopwatch.ElapsedMilliseconds}ms");
+                    
+                    operationStopwatch.Stop();
+                    System.Console.WriteLine($"  Total time to add student: {operationStopwatch.ElapsedMilliseconds}ms");
+                    
                     Assert.That(isStudentAdded, Is.True, $"Student {student.Name} with ID {student.Id} was not added successfully");
                 }
                 
                 // Step 2: Add 3 teachers
+                System.Console.WriteLine("\n=== ADDING TEACHERS ===");
                 for (int i = 0; i < TestData.Teachers.Length; i++)
                 {
                     var teacher = TestData.Teachers[i];
@@ -86,13 +172,39 @@ namespace SchoolManagement.Playwright.Tests
                     // For teachers after the first one, reload the page to ensure a clean state
                     if (i > 0)
                     {
+                        System.Console.WriteLine($"  Reloading page before adding next teacher...");
+                        var reloadStopwatch = Stopwatch.StartNew();
                         await Page!.ReloadAsync();
                         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        reloadStopwatch.Stop();
+                        System.Console.WriteLine($"  Page reload completed in {reloadStopwatch.ElapsedMilliseconds}ms");
+                        
                         // Add a small delay to ensure the page is fully loaded and ready
+                        System.Console.WriteLine($"  Waiting 1000ms after reload...");
                         await Task.Delay(1000);
                     }
                     
-                    await _teachersPage.AddTeacher(
+                    // Time the entire teacher addition process
+                    operationStopwatch.Restart();
+                    
+                    // Navigate to Teachers page
+                    System.Console.WriteLine($"  Navigating to Teachers page...");
+                    var navStopwatch = Stopwatch.StartNew();
+                    await _teachersPage.NavigateToTeachersPage();
+                    navStopwatch.Stop();
+                    System.Console.WriteLine($"  Navigation completed in {navStopwatch.ElapsedMilliseconds}ms");
+                    
+                    // Click Add New Teacher button
+                    System.Console.WriteLine($"  Clicking Add New Teacher button...");
+                    var buttonStopwatch = Stopwatch.StartNew();
+                    await _teachersPage.ClickAddNewTeacherButton();
+                    buttonStopwatch.Stop();
+                    System.Console.WriteLine($"  Button click completed in {buttonStopwatch.ElapsedMilliseconds}ms");
+                    
+                    // Fill teacher form
+                    System.Console.WriteLine($"  Filling teacher form...");
+                    var formStopwatch = Stopwatch.StartNew();
+                    await _teachersPage.FillTeacherForm(
                         name: teacher.Name,
                         teacherId: teacher.Id,
                         email: teacher.Email,
@@ -100,13 +212,31 @@ namespace SchoolManagement.Playwright.Tests
                         subject: teacher.Subject,
                         address: teacher.Address
                     );
+                    formStopwatch.Stop();
+                    System.Console.WriteLine($"  Form filling completed in {formStopwatch.ElapsedMilliseconds}ms");
+                    
+                    // Submit teacher form
+                    System.Console.WriteLine($"  Submitting teacher form...");
+                    var submitStopwatch = Stopwatch.StartNew();
+                    await _teachersPage.SubmitTeacherForm();
+                    submitStopwatch.Stop();
+                    System.Console.WriteLine($"  Form submission completed in {submitStopwatch.ElapsedMilliseconds}ms");
                     
                     // Verify teacher was added
+                    System.Console.WriteLine($"  Verifying teacher was added...");
+                    var verifyStopwatch = Stopwatch.StartNew();
                     var isTeacherAdded = await _teachersPage.VerifyTeacherAdded(teacher.Name, teacher.Id);
+                    verifyStopwatch.Stop();
+                    System.Console.WriteLine($"  Verification completed in {verifyStopwatch.ElapsedMilliseconds}ms");
+                    
+                    operationStopwatch.Stop();
+                    System.Console.WriteLine($"  Total time to add teacher: {operationStopwatch.ElapsedMilliseconds}ms");
+                    
                     Assert.That(isTeacherAdded, Is.True, $"Teacher {teacher.Name} with ID {teacher.Id} was not added successfully");
                 }
                 
                 // Step 3: Add 2 classes
+                System.Console.WriteLine("\n=== ADDING CLASSES ===");
                 for (int i = 0; i < TestData.Classes.Length; i++)
                 {
                     var classData = TestData.Classes[i];
@@ -115,47 +245,124 @@ namespace SchoolManagement.Playwright.Tests
                     // For classes after the first one, reload the page to ensure a clean state
                     if (i > 0)
                     {
+                        System.Console.WriteLine($"  Reloading page before adding next class...");
+                        var reloadStopwatch = Stopwatch.StartNew();
                         await Page!.ReloadAsync();
                         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        reloadStopwatch.Stop();
+                        System.Console.WriteLine($"  Page reload completed in {reloadStopwatch.ElapsedMilliseconds}ms");
+                        
                         // Add a small delay to ensure the page is fully loaded and ready
+                        System.Console.WriteLine($"  Waiting 1000ms after reload...");
                         await Task.Delay(1000);
                     }
                     
+                    // Time the entire class addition process
+                    operationStopwatch.Restart();
+                    
+                    System.Console.WriteLine($"  Starting class addition process...");
+                    var addClassSw = Stopwatch.StartNew();
                     await _classesPage.AddClass(
                         name: classData.Name,
                         classCode: classData.Code,
                         description: classData.Description
                     );
+                    addClassSw.Stop();
+                    System.Console.WriteLine($"  Class addition process completed in {addClassSw.ElapsedMilliseconds}ms");
                     
                     // Verify class was added
+                    System.Console.WriteLine($"  Verifying class was added...");
+                    var verifyStopwatch = Stopwatch.StartNew();
                     var isClassAdded = await _classesPage.VerifyClassAdded(classData.Name, classData.Code);
+                    verifyStopwatch.Stop();
+                    System.Console.WriteLine($"  Verification completed in {verifyStopwatch.ElapsedMilliseconds}ms");
+                    
+                    operationStopwatch.Stop();
+                    System.Console.WriteLine($"  Total time to add class: {operationStopwatch.ElapsedMilliseconds}ms");
+                    
                     Assert.That(isClassAdded, Is.True, $"Class {classData.Name} with code {classData.Code} was not added successfully");
                 }
                 
                 // Step 4: Assign teachers to classes
+                System.Console.WriteLine("\n=== ASSIGNING TEACHERS TO CLASSES ===");
                 for (int i = 0; i < TestData.Classes.Length; i++)
                 {
                     var classData = TestData.Classes[i];
                     var teacher = TestData.Teachers[i]; // Assign each teacher to a different class
                     System.Console.WriteLine($"Assigning teacher {teacher.Name} to class {classData.Name}");
                     
-                    // For assignments after the first one, reload the page to ensure a clean state
-                    if (i > 0)
-                    {
-                        await Page!.ReloadAsync();
-                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                        // Add a small delay to ensure the page is fully loaded and ready
-                        await Task.Delay(1000);
-                    }
+                    // Always reload the page before assigning a teacher to ensure a clean state
+                    System.Console.WriteLine($"  Reloading page before teacher assignment...");
+                    var reloadStopwatch = Stopwatch.StartNew();
+                    await Page!.ReloadAsync();
+                    await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                    reloadStopwatch.Stop();
+                    System.Console.WriteLine($"  Page reload completed in {reloadStopwatch.ElapsedMilliseconds}ms");
                     
-                    await _classesPage.AssignTeacherToClass(
-                        teacherName: teacher.Name,
-                        className: classData.Name
-                    );
+                    // Add a longer delay to ensure the page is fully loaded and ready
+                    System.Console.WriteLine($"  Waiting 2000ms after reload...");
+                    await Task.Delay(2000);
+                    
+                    // Time the entire teacher assignment process
+                    operationStopwatch.Restart();
+                    
+                    try
+                    {
+                        // Navigate to Classes page
+                        System.Console.WriteLine($"  Navigating to Classes page...");
+                        var navStopwatch = Stopwatch.StartNew();
+                        await _classesPage.NavigateToClassesPage();
+                        navStopwatch.Stop();
+                        System.Console.WriteLine($"  Navigation completed in {navStopwatch.ElapsedMilliseconds}ms");
+                        
+                        // Wait for the table to be visible
+                        System.Console.WriteLine($"  Waiting for table to be visible...");
+                        var tableStopwatch = Stopwatch.StartNew();
+                        await Page.WaitForSelectorAsync("table", new PageWaitForSelectorOptions { Timeout = 30000 });
+                        tableStopwatch.Stop();
+                        System.Console.WriteLine($"  Table became visible in {tableStopwatch.ElapsedMilliseconds}ms");
+                        
+                        // Wait for the specific class row to be visible
+                        System.Console.WriteLine($"  Waiting for class row to be visible...");
+                        var rowStopwatch = Stopwatch.StartNew();
+                        var classRow = Page.Locator("tr", new() { HasText = classData.Name });
+                        await classRow.WaitForAsync(new() { Timeout = 30000 });
+                        rowStopwatch.Stop();
+                        System.Console.WriteLine($"  Class row became visible in {rowStopwatch.ElapsedMilliseconds}ms");
+                        
+                        // Wait for the Assign Teacher button to be visible
+                        System.Console.WriteLine($"  Waiting for Manage button to be visible...");
+                        var buttonStopwatch = Stopwatch.StartNew();
+                        var assignButton = classRow.Locator("button:has-text('Manage')");
+                        await assignButton.WaitForAsync(new() { Timeout = 30000 });
+                        buttonStopwatch.Stop();
+                        System.Console.WriteLine($"  Manage button became visible in {buttonStopwatch.ElapsedMilliseconds}ms");
+                        
+                        // Now proceed with the assignment
+                        System.Console.WriteLine($"  Starting teacher assignment process...");
+                        var assignStopwatch = Stopwatch.StartNew();
+                        await _classesPage.AssignTeacherToClass(
+                            teacherName: teacher.Name,
+                            className: classData.Name
+                        );
+                        assignStopwatch.Stop();
+                        System.Console.WriteLine($"  Teacher assignment process completed in {assignStopwatch.ElapsedMilliseconds}ms");
+                        
+                        operationStopwatch.Stop();
+                        System.Console.WriteLine($"  Total time to assign teacher: {operationStopwatch.ElapsedMilliseconds}ms");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Console.WriteLine($"Error assigning teacher {teacher.Name} to class {classData.Name}: {ex.Message}");
+                        // Take a screenshot for debugging
+                        await Page.ScreenshotAsync(new PageScreenshotOptions { Path = $"error-assign-teacher-{i}.png" });
+                        throw;
+                    }
                 }
                 
                 // Step 5: Assign students to classes
                 // For each class, assign 2 students
+                System.Console.WriteLine("\n=== ASSIGNING STUDENTS TO CLASSES ===");
                 for (int i = 0; i < TestData.Classes.Length; i++)
                 {
                     var classData = TestData.Classes[i];
@@ -172,25 +379,84 @@ namespace SchoolManagement.Playwright.Tests
                         var student = TestData.Students[studentIndex];
                         System.Console.WriteLine($"Assigning student {student.Name} to class {classData.Name}");
                         
-                        // For assignments after the first one in each class, reload the page to ensure a clean state
-                        if (j > 0 || i > 0)
-                        {
-                            await Page!.ReloadAsync();
-                            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                            // Add a small delay to ensure the page is fully loaded and ready
-                            await Task.Delay(1000);
-                        }
+                        // Always reload the page before assigning a student to ensure a clean state
+                        System.Console.WriteLine($"  Reloading page before student assignment...");
+                        var reloadStopwatch = Stopwatch.StartNew();
+                        await Page!.ReloadAsync();
+                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        reloadStopwatch.Stop();
+                        System.Console.WriteLine($"  Page reload completed in {reloadStopwatch.ElapsedMilliseconds}ms");
                         
-                        await _classesPage.AssignStudentToClass(
-                            studentName: student.Name,
-                            className: classData.Name
-                        );
+                        // Add a longer delay to ensure the page is fully loaded and ready
+                        System.Console.WriteLine($"  Waiting 2000ms after reload...");
+                        await Task.Delay(2000);
+                        
+                        // Time the entire student assignment process
+                        operationStopwatch.Restart();
+                        
+                        try
+                        {
+                            // Navigate to Classes page
+                            System.Console.WriteLine($"  Navigating to Classes page...");
+                            var navStopwatch = Stopwatch.StartNew();
+                            await _classesPage.NavigateToClassesPage();
+                            navStopwatch.Stop();
+                            System.Console.WriteLine($"  Navigation completed in {navStopwatch.ElapsedMilliseconds}ms");
+                            
+                            // Wait for the table to be visible
+                            System.Console.WriteLine($"  Waiting for table to be visible...");
+                            var tableStopwatch = Stopwatch.StartNew();
+                            await Page.WaitForSelectorAsync("table", new PageWaitForSelectorOptions { Timeout = 30000 });
+                            tableStopwatch.Stop();
+                            System.Console.WriteLine($"  Table became visible in {tableStopwatch.ElapsedMilliseconds}ms");
+                            
+                            // Wait for the specific class row to be visible
+                            System.Console.WriteLine($"  Waiting for class row to be visible...");
+                            var rowStopwatch = Stopwatch.StartNew();
+                            var classRow = Page.Locator("tr", new() { HasText = classData.Name });
+                            await classRow.WaitForAsync(new() { Timeout = 30000 });
+                            rowStopwatch.Stop();
+                            System.Console.WriteLine($"  Class row became visible in {rowStopwatch.ElapsedMilliseconds}ms");
+                            
+                            // Wait for the Assign Student button to be visible
+                            System.Console.WriteLine($"  Waiting for Assign Student button to be visible...");
+                            var buttonStopwatch = Stopwatch.StartNew();
+                            var assignButton = classRow.Locator("button:has-text('Assign Student')");
+                            await assignButton.WaitForAsync(new() { Timeout = 30000 });
+                            buttonStopwatch.Stop();
+                            System.Console.WriteLine($"  Assign Student button became visible in {buttonStopwatch.ElapsedMilliseconds}ms");
+                            
+                            // Now proceed with the assignment
+                            System.Console.WriteLine($"  Starting student assignment process...");
+                            var assignStopwatch = Stopwatch.StartNew();
+                            await _classesPage.AssignStudentToClass(
+                                studentName: student.Name,
+                                className: classData.Name
+                            );
+                            assignStopwatch.Stop();
+                            System.Console.WriteLine($"  Student assignment process completed in {assignStopwatch.ElapsedMilliseconds}ms");
+                            
+                            operationStopwatch.Stop();
+                            System.Console.WriteLine($"  Total time to assign student: {operationStopwatch.ElapsedMilliseconds}ms");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Console.WriteLine($"Error assigning student {student.Name} to class {classData.Name}: {ex.Message}");
+                            // Take a screenshot for debugging
+                            await Page.ScreenshotAsync(new PageScreenshotOptions { Path = $"error-assign-student-{i}-{j}.png" });
+                            throw;
+                        }
                     }
                 }
                 
                 // Take a final screenshot
                 await Page!.ScreenshotAsync(new PageScreenshotOptions { Path = "final-state.png" });
                 System.Console.WriteLine("Final screenshot saved to final-state.png");
+                
+                // Report total test time
+                totalStopwatch.Stop();
+                System.Console.WriteLine($"\n=== TEST COMPLETED ===");
+                System.Console.WriteLine($"Total test execution time: {totalStopwatch.ElapsedMilliseconds}ms");
             }
             catch (System.Exception ex)
             {

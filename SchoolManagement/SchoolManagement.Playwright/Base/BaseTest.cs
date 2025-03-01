@@ -1,5 +1,6 @@
 using Microsoft.Playwright;
 using NUnit.Framework;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace SchoolManagement.Playwright.Base
@@ -14,17 +15,30 @@ namespace SchoolManagement.Playwright.Base
         [SetUp]
         public async Task SetUp()
         {
+            System.Console.WriteLine("=== SETUP PERFORMANCE DEBUGGING ===");
+            var totalSetupSw = Stopwatch.StartNew();
+            
             // Create Playwright instance
+            System.Console.WriteLine("Creating Playwright instance...");
+            var playwrightSw = Stopwatch.StartNew();
             var playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+            playwrightSw.Stop();
+            System.Console.WriteLine($"Playwright instance created in {playwrightSw.ElapsedMilliseconds}ms");
             
             // Launch browser with increased timeout and viewport size
+            System.Console.WriteLine("Launching browser...");
+            var browserSw = Stopwatch.StartNew();
             Browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
             {
                 Headless = false, // Set to false for debugging
                 Timeout = 60000 // 60 seconds
             });
+            browserSw.Stop();
+            System.Console.WriteLine($"Browser launched in {browserSw.ElapsedMilliseconds}ms");
             
             // Create a new browser context with larger viewport
+            System.Console.WriteLine("Creating browser context...");
+            var contextSw = Stopwatch.StartNew();
             Context = await Browser.NewContextAsync(new BrowserNewContextOptions
             {
                 ViewportSize = new ViewportSize
@@ -33,23 +47,45 @@ namespace SchoolManagement.Playwright.Base
                     Height = 800
                 }
             });
+            contextSw.Stop();
+            System.Console.WriteLine($"Browser context created in {contextSw.ElapsedMilliseconds}ms");
             
             // Create a new page
+            System.Console.WriteLine("Creating new page...");
+            var pageSw = Stopwatch.StartNew();
             Page = await Context.NewPageAsync();
+            pageSw.Stop();
+            System.Console.WriteLine($"New page created in {pageSw.ElapsedMilliseconds}ms");
+            
+            totalSetupSw.Stop();
+            System.Console.WriteLine($"Total setup time: {totalSetupSw.ElapsedMilliseconds}ms");
         }
 
         [TearDown]
         public async Task TearDown()
         {
+            System.Console.WriteLine("=== TEARDOWN PERFORMANCE DEBUGGING ===");
+            var teardownSw = Stopwatch.StartNew();
+            
             // Close browser
             if (Browser != null)
             {
+                System.Console.WriteLine("Disposing browser...");
+                var disposeSw = Stopwatch.StartNew();
                 await Browser.DisposeAsync();
+                disposeSw.Stop();
+                System.Console.WriteLine($"Browser disposed in {disposeSw.ElapsedMilliseconds}ms");
             }
+            
+            teardownSw.Stop();
+            System.Console.WriteLine($"Total teardown time: {teardownSw.ElapsedMilliseconds}ms");
         }
 
         protected async Task CloseAnyOpenModals()
         {
+            System.Console.WriteLine("Checking for open modals...");
+            var modalSw = Stopwatch.StartNew();
+            
             try
             {
                 // Check if there are any open modals
@@ -75,10 +111,11 @@ namespace SchoolManagement.Playwright.Base
                             if (await closeButton.IsVisibleAsync())
                             {
                                 await closeButton.ClickAsync(new LocatorClickOptions { Force = true });
-                                System.Console.WriteLine($"Clicked close button {i+1}");
+                                System.Console.WriteLine($"Clicked close button {i+1} at {modalSw.ElapsedMilliseconds}ms");
                                 
                                 // Wait a bit for the modal to close
                                 await Task.Delay(500);
+                                System.Console.WriteLine($"Waited 500ms after clicking close button at {modalSw.ElapsedMilliseconds}ms");
                             }
                         }
                     }
@@ -88,7 +125,10 @@ namespace SchoolManagement.Playwright.Base
                         
                         // Try clicking outside the modal
                         await Page.Mouse.ClickAsync(10, 10);
+                        System.Console.WriteLine($"Clicked outside modal at {modalSw.ElapsedMilliseconds}ms");
+                        
                         await Task.Delay(500);
+                        System.Console.WriteLine($"Waited 500ms after clicking outside at {modalSw.ElapsedMilliseconds}ms");
                     }
                     
                     // Check if modals are still open
@@ -99,7 +139,10 @@ namespace SchoolManagement.Playwright.Base
                         
                         // Try pressing Escape key
                         await Page.Keyboard.PressAsync("Escape");
+                        System.Console.WriteLine($"Pressed Escape key at {modalSw.ElapsedMilliseconds}ms");
+                        
                         await Task.Delay(500);
+                        System.Console.WriteLine($"Waited 500ms after pressing Escape at {modalSw.ElapsedMilliseconds}ms");
                         
                         // Check again
                         count = await modalElements.CountAsync();
@@ -126,24 +169,42 @@ namespace SchoolManagement.Playwright.Base
             {
                 System.Console.WriteLine($"Error closing modals: {ex.Message}");
             }
+            
+            modalSw.Stop();
+            System.Console.WriteLine($"Modal check/close completed in {modalSw.ElapsedMilliseconds}ms");
         }
 
         protected async Task NavigateToPage(string pageName)
         {
+            System.Console.WriteLine($"Navigating to {pageName} page...");
+            var navSw = Stopwatch.StartNew();
+            
             // Make sure no modals are open
             await CloseAnyOpenModals();
+            System.Console.WriteLine($"Modal check completed at {navSw.ElapsedMilliseconds}ms");
             
             // Navigate to the specified page
             var navLink = Page!.Locator("nav a.nav-link", new() { HasText = pageName });
+            System.Console.WriteLine($"Found navigation link at {navSw.ElapsedMilliseconds}ms");
             
             // Use force option to bypass any intercepting elements
             await navLink.ClickAsync(new LocatorClickOptions { Force = true });
+            System.Console.WriteLine($"Clicked navigation link at {navSw.ElapsedMilliseconds}ms");
             
             // Wait for the page to load
+            var networkSw = Stopwatch.StartNew();
             await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            networkSw.Stop();
+            System.Console.WriteLine($"Waited for network idle in {networkSw.ElapsedMilliseconds}ms");
             
             // Take a screenshot for debugging
+            var screenshotSw = Stopwatch.StartNew();
             await Page.ScreenshotAsync(new PageScreenshotOptions { Path = $"{pageName.ToLower()}-page.png" });
+            screenshotSw.Stop();
+            System.Console.WriteLine($"Screenshot taken in {screenshotSw.ElapsedMilliseconds}ms");
+            
+            navSw.Stop();
+            System.Console.WriteLine($"Navigation to {pageName} completed in {navSw.ElapsedMilliseconds}ms");
         }
     }
 }
