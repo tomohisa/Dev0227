@@ -55,7 +55,16 @@ namespace SchoolManagement.Playwright.Tests
                     var student = TestData.Students[i];
                     System.Console.WriteLine($"Adding student {i+1}/{TestData.Students.Length}: {student.Name} ({student.Id})");
                     
-                    // No need to reload the page - AddStudent method already navigates to the Students page
+                    // For students after the first one, reload the page to ensure a clean state
+                    // This helps avoid timing issues with the UI
+                    if (i > 0)
+                    {
+                        await Page!.ReloadAsync();
+                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        // Add a small delay to ensure the page is fully loaded and ready
+                        await Task.Delay(1000);
+                    }
+                    
                     await _studentsPage.AddStudent(
                         name: student.Name,
                         studentId: student.Id,
@@ -74,7 +83,15 @@ namespace SchoolManagement.Playwright.Tests
                     var teacher = TestData.Teachers[i];
                     System.Console.WriteLine($"Adding teacher {i+1}/{TestData.Teachers.Length}: {teacher.Name} ({teacher.Id})");
                     
-                    // No need to reload the page - AddTeacher method already navigates to the Teachers page
+                    // For teachers after the first one, reload the page to ensure a clean state
+                    if (i > 0)
+                    {
+                        await Page!.ReloadAsync();
+                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        // Add a small delay to ensure the page is fully loaded and ready
+                        await Task.Delay(1000);
+                    }
+                    
                     await _teachersPage.AddTeacher(
                         name: teacher.Name,
                         teacherId: teacher.Id,
@@ -95,7 +112,15 @@ namespace SchoolManagement.Playwright.Tests
                     var classData = TestData.Classes[i];
                     System.Console.WriteLine($"Adding class {i+1}/{TestData.Classes.Length}: {classData.Name} ({classData.Code})");
                     
-                    // No need to reload the page - AddClass method already navigates to the Classes page
+                    // For classes after the first one, reload the page to ensure a clean state
+                    if (i > 0)
+                    {
+                        await Page!.ReloadAsync();
+                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        // Add a small delay to ensure the page is fully loaded and ready
+                        await Task.Delay(1000);
+                    }
+                    
                     await _classesPage.AddClass(
                         name: classData.Name,
                         classCode: classData.Code,
@@ -114,7 +139,15 @@ namespace SchoolManagement.Playwright.Tests
                     var teacher = TestData.Teachers[i]; // Assign each teacher to a different class
                     System.Console.WriteLine($"Assigning teacher {teacher.Name} to class {classData.Name}");
                     
-                    // No need to reload the page - AssignTeacherToClass method already navigates to the Classes page
+                    // For assignments after the first one, reload the page to ensure a clean state
+                    if (i > 0)
+                    {
+                        await Page!.ReloadAsync();
+                        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                        // Add a small delay to ensure the page is fully loaded and ready
+                        await Task.Delay(1000);
+                    }
+                    
                     await _classesPage.AssignTeacherToClass(
                         teacherName: teacher.Name,
                         className: classData.Name
@@ -139,7 +172,15 @@ namespace SchoolManagement.Playwright.Tests
                         var student = TestData.Students[studentIndex];
                         System.Console.WriteLine($"Assigning student {student.Name} to class {classData.Name}");
                         
-                        // No need to reload the page - AssignStudentToClass method already navigates to the Classes page
+                        // For assignments after the first one in each class, reload the page to ensure a clean state
+                        if (j > 0 || i > 0)
+                        {
+                            await Page!.ReloadAsync();
+                            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                            // Add a small delay to ensure the page is fully loaded and ready
+                            await Task.Delay(1000);
+                        }
+                        
                         await _classesPage.AssignStudentToClass(
                             studentName: student.Name,
                             className: classData.Name
