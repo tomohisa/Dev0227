@@ -118,35 +118,35 @@ namespace SchoolManagement.Playwright.PageObjects
             await addButton.ClickAsync(new LocatorClickOptions { Force = true });
             System.Console.WriteLine($"  [StudentsPage] Clicked Add Student button in {sw.ElapsedMilliseconds}ms");
             
-            try {
-                var modalCloseSw = Stopwatch.StartNew();
-                await _page.WaitForSelectorAsync("#addStudentModal:not(.show)", new PageWaitForSelectorOptions { 
-                    State = WaitForSelectorState.Visible, 
-                    Timeout = 1000 
-                });
-                modalCloseSw.Stop();
-                System.Console.WriteLine($"  [StudentsPage] Modal closed in {modalCloseSw.ElapsedMilliseconds}ms");
-            } catch (Exception ex) {
-                System.Console.WriteLine($"  [StudentsPage] Modal did not close: {ex.Message}");
-                System.Console.WriteLine($"  [StudentsPage] Attempting to force close modal after {sw.ElapsedMilliseconds}ms");
+            // try {
+            //     var modalCloseSw = Stopwatch.StartNew();
+            //     await _page.WaitForSelectorAsync("#addStudentModal:not(.show)", new PageWaitForSelectorOptions { 
+            //         State = WaitForSelectorState.Visible, 
+            //         Timeout = 1000 
+            //     });
+            //     modalCloseSw.Stop();
+            //     System.Console.WriteLine($"  [StudentsPage] Modal closed in {modalCloseSw.ElapsedMilliseconds}ms");
+            // } catch (Exception ex) {
+            //     System.Console.WriteLine($"  [StudentsPage] Modal did not close: {ex.Message}");
+            //     System.Console.WriteLine($"  [StudentsPage] Attempting to force close modal after {sw.ElapsedMilliseconds}ms");
                 
-                await _page.EvaluateAsync("document.querySelector('#addStudentModal.show .btn-close')?.click()");
-                System.Console.WriteLine($"  [StudentsPage] Clicked close button via JS in {sw.ElapsedMilliseconds}ms");
+            //     await _page.EvaluateAsync("document.querySelector('#addStudentModal.show .btn-close')?.click()");
+            //     System.Console.WriteLine($"  [StudentsPage] Clicked close button via JS in {sw.ElapsedMilliseconds}ms");
                 
-                await Task.Delay(1000);
-                System.Console.WriteLine($"  [StudentsPage] Waited 1000ms after JS click");
+            //     await Task.Delay(1000);
+            //     System.Console.WriteLine($"  [StudentsPage] Waited 1000ms after JS click");
                 
-                await _page.Keyboard.PressAsync("Escape");
-                System.Console.WriteLine($"  [StudentsPage] Pressed Escape key in {sw.ElapsedMilliseconds}ms");
+            //     await _page.Keyboard.PressAsync("Escape");
+            //     System.Console.WriteLine($"  [StudentsPage] Pressed Escape key in {sw.ElapsedMilliseconds}ms");
                 
-                await Task.Delay(1000);
-                System.Console.WriteLine($"  [StudentsPage] Waited 1000ms after Escape key");
-            }
+            //     await Task.Delay(1000);
+            //     System.Console.WriteLine($"  [StudentsPage] Waited 1000ms after Escape key");
+            // }
             
-            var networkSw = Stopwatch.StartNew();
-            await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            networkSw.Stop();
-            System.Console.WriteLine($"  [StudentsPage] Waited for network idle in {networkSw.ElapsedMilliseconds}ms");
+            // var networkSw = Stopwatch.StartNew();
+            // await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // networkSw.Stop();
+            // System.Console.WriteLine($"  [StudentsPage] Waited for network idle in {networkSw.ElapsedMilliseconds}ms");
             
             sw.Stop();
             System.Console.WriteLine($"  [StudentsPage] Form submission completed in {sw.ElapsedMilliseconds}ms");
@@ -161,6 +161,9 @@ namespace SchoolManagement.Playwright.PageObjects
             await _page.WaitForSelectorAsync("table", new PageWaitForSelectorOptions { Timeout = 60000 });
             tableSw.Stop();
             System.Console.WriteLine($"  [StudentsPage] Table appeared in {tableSw.ElapsedMilliseconds}ms");
+            
+            // wait 500 milliseconds to allow table to fully render
+            await Task.Delay(500);
             
             var studentRows = _page.Locator("tr", new() { HasText = name }).Filter(new() { HasText = studentId });
             System.Console.WriteLine($"  [StudentsPage] Located student rows in {sw.ElapsedMilliseconds}ms");

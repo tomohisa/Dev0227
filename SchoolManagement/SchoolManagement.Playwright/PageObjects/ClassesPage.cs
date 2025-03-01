@@ -240,7 +240,6 @@ namespace SchoolManagement.Playwright.PageObjects
             System.Console.WriteLine($"  [ClassesPage] Starting to assign teacher '{teacherName}' to class '{className}'");
             var totalSw = Stopwatch.StartNew();
             
-            await NavigateToClassesPage();
             await ClickAssignTeacherButton(className);
             await SelectTeacherFromDropdown(teacherName);
             await SubmitAssignTeacherForm();
