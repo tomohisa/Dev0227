@@ -1,0 +1,134 @@
+@namespace SchoolManagement.Web.Components.Pages
+
+<script>
+    function DisplayAddClassModal(param) {
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addClassModal'));
+        if (param === 'show') {
+            modal.show();
+            // Ensure buttons are visible and fix positioning
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#addClassModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+                
+                // Fix modal positioning for small screens
+                adjustModalForScreenSize('addClassModal');
+            }, 100);
+        } else {
+            modal.hide();
+        }
+    }
+    
+    function DisplayEditClassModal(param) {
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('editClassModal'));
+        if (param === 'show') {
+            modal.show();
+            // Ensure buttons are visible and fix positioning
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#editClassModal .modal-footer button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+                
+                // Fix modal positioning for small screens
+                adjustModalForScreenSize('editClassModal');
+            }, 100);
+        } else {
+            modal.hide();
+        }
+    }
+    
+    function DisplayManageClassModal(param) {
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('manageClassModal'));
+        if (param === 'show') {
+            modal.show();
+            // Initialize tabs when the modal is shown
+            var teacherTab = document.getElementById('teacher-tab');
+            var studentsTab = document.getElementById('students-tab');
+            
+            // Add click event listeners to the tabs
+            teacherTab.addEventListener('click', function() {
+                var teacherPane = document.getElementById('teacher-tab-pane');
+                var studentsPane = document.getElementById('students-tab-pane');
+                
+                // Show teacher tab, hide students tab
+                teacherPane.classList.add('show', 'active');
+                studentsPane.classList.remove('show', 'active');
+                
+                // Update active state on tabs
+                teacherTab.classList.add('active');
+                teacherTab.setAttribute('aria-selected', 'true');
+                studentsTab.classList.remove('active');
+                studentsTab.setAttribute('aria-selected', 'false');
+            });
+            
+            studentsTab.addEventListener('click', function() {
+                var teacherPane = document.getElementById('teacher-tab-pane');
+                var studentsPane = document.getElementById('students-tab-pane');
+                
+                // Show students tab, hide teacher tab
+                studentsPane.classList.add('show', 'active');
+                teacherPane.classList.remove('show', 'active');
+                
+                // Update active state on tabs
+                studentsTab.classList.add('active');
+                studentsTab.setAttribute('aria-selected', 'true');
+                teacherTab.classList.remove('active');
+                teacherTab.setAttribute('aria-selected', 'false');
+            });
+            
+            // Ensure buttons are visible and fix positioning
+            setTimeout(function() {
+                var buttons = document.querySelectorAll('#manageClassModal .modal-footer button, #manageClassModal .card button, #manageClassModal .row button');
+                buttons.forEach(function(button) {
+                    button.style.display = 'inline-block';
+                });
+                
+                // Fix modal positioning for small screens
+                adjustModalForScreenSize('manageClassModal');
+            }, 100);
+        } else {
+            modal.hide();
+        }
+    }
+    
+    // Helper function to adjust modal display based on screen size
+    function adjustModalForScreenSize(modalId) {
+        var modalElement = document.getElementById(modalId);
+        var modalDialog = modalElement.querySelector('.modal-dialog');
+        
+        // For very small screens, ensure the modal takes up the full screen
+        if (window.innerWidth < 576) {
+            modalDialog.style.margin = '0';
+            modalDialog.style.maxWidth = '100%';
+            modalDialog.style.height = '100%';
+            
+            // Fix click position issues by ensuring the modal content is properly positioned
+            var modalContent = modalDialog.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.height = '100%';
+                modalContent.style.borderRadius = '0';
+            }
+        } else {
+            // Reset for larger screens
+            modalDialog.style.margin = '1.75rem auto';
+            modalDialog.style.maxWidth = '';
+            modalDialog.style.height = '';
+            
+            var modalContent = modalDialog.querySelector('.modal-content');
+            if (modalContent) {
+                modalContent.style.height = '';
+                modalContent.style.borderRadius = '';
+            }
+        }
+    }
+    
+    // Add window resize listener to adjust modals when screen size changes
+    window.addEventListener('resize', function() {
+        var openModals = document.querySelectorAll('.modal.show');
+        openModals.forEach(function(modal) {
+            adjustModalForScreenSize(modal.id);
+        });
+    });
+</script>

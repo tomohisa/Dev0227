@@ -1,0 +1,53 @@
+@namespace SchoolManagement.Web.Components.Pages
+
+<div class="modal fade" id="addClassModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="addClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <EditForm FormName="add-class" Model="@ClassModel" OnValidSubmit="async () => await OnAddClassSubmit.InvokeAsync()">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addClassModalLabel">Add Class</h5>
+                    <button type="button" class="btn-close" @onclick="async () => await OnCloseModal.InvokeAsync()" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <InputText id="name" class="form-control" @bind-Value="ClassModel.Name" />
+                        <ValidationMessage For="@(() => ClassModel.Name)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="classCode" class="form-label">Class Code</label>
+                        <InputText id="classCode" class="form-control" @bind-Value="ClassModel.ClassCode" />
+                        <ValidationMessage For="@(() => ClassModel.ClassCode)" class="text-danger" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <InputTextArea id="description" class="form-control" @bind-Value="ClassModel.Description" />
+                        <ValidationMessage For="@(() => ClassModel.Description)" class="text-danger" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(ClassModel.Error))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @ClassModel.Error
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="async () => await OnCloseModal.InvokeAsync()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Class</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ClassModel ClassModel { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnCloseModal { get; set; }
+
+    [Parameter]
+    public EventCallback OnAddClassSubmit { get; set; }
+}

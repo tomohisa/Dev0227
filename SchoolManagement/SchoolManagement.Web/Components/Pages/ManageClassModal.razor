@@ -1,0 +1,183 @@
+@namespace SchoolManagement.Web.Components.Pages
+@using SchoolManagement.Domain
+
+<div class="modal fade" id="manageClassModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="manageClassModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="manageClassModalLabel">Manage Class: @ManageClassModel.ClassName</h5>
+                <button type="button" class="btn-close" @onclick="async () => await OnCloseModal.InvokeAsync()" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="manageClassTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="teacher-tab" data-bs-toggle="tab" data-bs-target="#teacher-tab-pane" type="button" role="tab" aria-controls="teacher-tab-pane" aria-selected="true">Teacher</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students-tab-pane" type="button" role="tab" aria-controls="students-tab-pane" aria-selected="false">Students</button>
+                    </li>
+                </ul>
+                <div class="tab-content p-3 border border-top-0 rounded-bottom" id="manageClassTabContent">
+                    <!-- Teacher Tab -->
+                    <div class="tab-pane fade show active" id="teacher-tab-pane" role="tabpanel" aria-labelledby="teacher-tab" tabindex="0">
+                        <h6 class="mb-3">Assigned Teacher</h6>
+                        @if (ManageClassModel.CurrentTeacher != null)
+                        {
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">@ManageClassModel.CurrentTeacher.Name</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">@ManageClassModel.CurrentTeacher.Subject</h6>
+                                    <p class="card-text">
+                                        <strong>Email:</strong> @ManageClassModel.CurrentTeacher.Email<br />
+                                        <strong>Phone:</strong> @ManageClassModel.CurrentTeacher.PhoneNumber
+                                    </p>
+                                    <button class="btn btn-warning" @onclick="async () => await OnRemoveTeacher.InvokeAsync()">Remove Teacher</button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-3">No teacher assigned to this class.</p>
+                        }
+
+                        <h6 class="mb-3">Assign Teacher</h6>
+                        <EditForm FormName="assign-teacher" Model="@AssignTeacherModel" OnValidSubmit="async () => await OnAssignTeacherSubmit.InvokeAsync()">
+                            <DataAnnotationsValidator />
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-8">
+                                    <label for="teacherId" class="form-label">Teacher</label>
+                                    <InputSelect id="teacherId" class="form-select" @bind-Value="AssignTeacherModel.TeacherId">
+                                        <option value="">Select a teacher...</option>
+                                        @if (AvailableTeachers != null)
+                                        {
+                                            @foreach (var teacher in AvailableTeachers)
+                                            {
+                                                <option value="@teacher.TeacherId">@teacher.Name (@teacher.Subject)</option>
+                                            }
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => AssignTeacherModel.TeacherId)" class="text-danger" />
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">Assign</button>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(AssignTeacherModel.Error))
+                            {
+                                <div class="alert alert-danger mt-3" role="alert">
+                                    @AssignTeacherModel.Error
+                                </div>
+                            }
+                        </EditForm>
+                    </div>
+
+                    <!-- Students Tab -->
+                    <div class="tab-pane fade" id="students-tab-pane" role="tabpanel" aria-labelledby="students-tab" tabindex="0">
+                        <h6 class="mb-3">Enrolled Students (@(ManageClassModel.ClassStudents?.Length ?? 0))</h6>
+                        @if (ManageClassModel.ClassStudents == null)
+                        {
+                            <p><em>Loading...</em></p>
+                        }
+                        else if (!ManageClassModel.ClassStudents.Any())
+                        {
+                            <p class="text-muted mb-3">No students enrolled in this class.</p>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Student ID</th>
+                                            <th>Email</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var student in ManageClassModel.ClassStudents)
+                                        {
+                                            <tr>
+                                                <td>@student.Name</td>
+                                                <td>@student.StudentIdNumber</td>
+                                                <td>@student.Email</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-warning" @onclick="async () => await OnRemoveStudentClicked.InvokeAsync(student.StudentId)">Remove</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+
+                        <h6 class="mb-3 mt-4">Add Student</h6>
+                        <EditForm FormName="add-student" Model="@AddStudentModel" OnValidSubmit="async () => await OnAddStudentSubmit.InvokeAsync()">
+                            <DataAnnotationsValidator />
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-8">
+                                    <label for="studentId" class="form-label">Student</label>
+                                    <InputSelect id="studentId" class="form-select" @bind-Value="AddStudentModel.StudentId">
+                                        <option value="">Select a student...</option>
+                                        @if (AvailableStudents != null)
+                                        {
+                                            @foreach (var student in AvailableStudents)
+                                            {
+                                                <option value="@student.StudentId">@student.Name (@student.StudentIdNumber)</option>
+                                            }
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => AddStudentModel.StudentId)" class="text-danger" />
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">Add</button>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(AddStudentModel.Error))
+                            {
+                                <div class="alert alert-danger mt-3" role="alert">
+                                    @AddStudentModel.Error
+                                </div>
+                            }
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="async () => await OnCloseModal.InvokeAsync()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ManageClassModel ManageClassModel { get; set; } = default!;
+
+    [Parameter]
+    public AssignTeacherModel AssignTeacherModel { get; set; } = default!;
+
+    [Parameter]
+    public AddStudentModel AddStudentModel { get; set; } = default!;
+
+    [Parameter]
+    public TeacherQuery.TeacherRecord[]? AvailableTeachers { get; set; }
+
+    [Parameter]
+    public StudentQuery.StudentRecord[]? AvailableStudents { get; set; }
+
+    [Parameter]
+    public EventCallback OnCloseModal { get; set; }
+
+    [Parameter]
+    public EventCallback OnRemoveTeacher { get; set; }
+
+    [Parameter]
+    public EventCallback OnAssignTeacherSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid> OnRemoveStudentClicked { get; set; }
+
+    [Parameter]
+    public EventCallback OnAddStudentSubmit { get; set; }
+}
