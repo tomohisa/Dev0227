@@ -3,6 +3,10 @@ using Sekiban.Pure.Events;
 
 namespace SchoolManagement.Domain;
 
+// Query Types
+[JsonSerializable(typeof(StudentIdExistsQuery))]
+[JsonSerializable(typeof(TeacherIdExistsQuery))]
+
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(EventDocumentCommon))]
 [JsonSerializable(typeof(EventDocumentCommon[]))]

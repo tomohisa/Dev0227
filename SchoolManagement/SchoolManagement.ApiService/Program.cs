@@ -9,6 +9,7 @@ using Sekiban.Pure.Command.Handlers;
 using Sekiban.Pure.CosmosDb;
 using Sekiban.Pure.Orleans.Parts;
 using Sekiban.Pure.Postgres;
+using SchoolManagement.ApiService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,7 +133,11 @@ apiRoute
         "/students/register",
         async (
             [FromBody] RegisterStudentCommand command,
-            [FromServices] SekibanOrleansExecutor executor) => await executor.CommandAsync(command).UnwrapBox())
+            [FromServices] SekibanOrleansExecutor executor) => 
+        {
+            // Check for duplicate studentId
+            return await DuplicateCheckEndpointFilters.CheckStudentIdDuplicate(command, executor);
+        })
     .WithName("RegisterStudent")
     .WithOpenApi();
 
@@ -202,7 +207,11 @@ apiRoute
         "/teachers/register",
         async (
             [FromBody] RegisterTeacherCommand command,
-            [FromServices] SekibanOrleansExecutor executor) => await executor.CommandAsync(command).UnwrapBox())
+            [FromServices] SekibanOrleansExecutor executor) => 
+        {
+            // Check for duplicate teacherId
+            return await DuplicateCheckEndpointFilters.CheckTeacherIdDuplicate(command, executor);
+        })
     .WithName("RegisterTeacher")
     .WithOpenApi();
 
