@@ -26,6 +26,8 @@ The School Management System is built using a modern .NET technology stack with 
    - Event projection for state reconstruction
    - Query handling for read operations
    - Aggregate management
+   - Source generation for domain types
+   - In-memory testing capabilities
 
 4. **Orleans**
    - Distributed actor model
@@ -74,6 +76,12 @@ The School Management System is built using a modern .NET technology stack with 
    - Service discovery and configuration
    - Local development environment
 
+4. **xUnit**
+   - Unit testing framework
+   - Integration with Sekiban for domain testing
+   - Support for in-memory testing
+   - Assertion capabilities
+
 ## Project Structure
 
 ```
@@ -83,7 +91,8 @@ SchoolManagement/
 ├── SchoolManagement.Web/              # Blazor web frontend
 ├── SchoolManagement.AppHost/          # Aspire host for services
 ├── SchoolManagement.ServiceDefaults/  # Common service configurations
-└── SchoolManagement.Playwright/       # End-to-end tests
+├── SchoolManagement.Playwright/       # End-to-end tests
+└── SchoolManagement.Domain.Tests/     # Domain unit tests
 ```
 
 ### Key Components
@@ -94,6 +103,7 @@ SchoolManagement/
    - Implements projectors for state management
    - Defines queries for data retrieval
    - JSON serialization context for AOT compilation
+   - Generated domain types via Sekiban.Pure.SourceGenerator
 
 2. **SchoolManagement.ApiService**
    - Exposes API endpoints for commands and queries
@@ -126,6 +136,13 @@ SchoolManagement/
    - Defines test scenarios
    - Provides test utilities and helpers
 
+7. **SchoolManagement.Domain.Tests**
+   - Contains unit tests for domain logic
+   - Uses Sekiban's in-memory testing framework
+   - Tests commands, events, and projectors
+   - Verifies entity relationships
+   - Follows Given-When-Then pattern
+
 ## Development Setup
 
 ### Prerequisites
@@ -157,6 +174,19 @@ SchoolManagement/
 4. **Access the application**
    - Web frontend: https://localhost:7201
    - API service: https://localhost:7202
+
+### Testing
+
+1. **Run domain unit tests**
+   ```bash
+   dotnet test SchoolManagement.Domain.Tests
+   ```
+
+2. **Run end-to-end tests**
+   ```bash
+   cd SchoolManagement.Playwright
+   dotnet test
+   ```
 
 ### Configuration
 
@@ -222,6 +252,12 @@ Key configuration sections:
    - SignalR dependency for real-time updates
    - JavaScript interop overhead
    - Initial load time considerations
+
+4. **Testing Constraints**
+   - Domain tests rely on source-generated types
+   - Need to reference correct namespaces for testing
+   - In-memory testing doesn't validate database interactions
+   - Need to understand Sekiban's testing patterns
 
 ## Performance Considerations
 

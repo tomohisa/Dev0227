@@ -488,6 +488,230 @@ YourProject.Domain/
 └── YourDomainEventsJsonContext.cs      // JSON Context
 ```
 
+## Unit Testing
+
+Sekiban provides several approaches for unit testing your event-sourced applications. You can choose between in-memory testing for simplicity or Orleans-based testing for more complex scenarios.
+
+### 1. In-Memory Testing with SekibanInMemoryTestBase
+
+The simplest approach uses the `SekibanInMemoryTestBase` class from the `Sekiban.Pure.xUnit` namespace:
+
+```csharp
+public class YourTests : SekibanInMemoryTestBase
+{
+    // Override to provide your domain types
+    protected override SekibanDomainTypes GetDomainTypes() => 
+        YourDomainTypes.Generate(YourEventsJsonContext.Default.Options);
+
+    [Fact]
+    public void SimpleTest()
+    {
+        // Given - Execute a command and get the response
+        var response1 = GivenCommand(new CreateYourEntity("Name", "Value"));
+        Assert.Equal(1, response1.Version);
+
+        // When - Execute another command on the same aggregate
+        var response2 = WhenCommand(new UpdateYourEntity(response1.PartitionKeys.AggregateId, "NewValue"));
+        Assert.Equal(2, response2.Version);
+
+        // Then - Get the aggregate and verify its state
+        var aggregate = ThenGetAggregate<YourEntityProjector>(response2.PartitionKeys);
+        var entity = (YourEntity)aggregate.Payload;
+        Assert.Equal("NewValue", entity.Value);
+        
+        // Then - Execute a query and verify the result
+        var queryResult = ThenQuery(new YourEntityExistsQuery("Name"));
+        Assert.True(queryResult);
+    }
+}
+```
+
+### 2. Method Chaining with ResultBox
+
+For more fluent tests, you can use the ResultBox-based methods that support method chaining:
+
+```csharp
+public class YourTests : SekibanInMemoryTestBase
+{
+    protected override SekibanDomainTypes GetDomainTypes() => 
+        YourDomainTypes.Generate(YourEventsJsonContext.Default.Options);
+
+    [Fact]
+    public void ChainedTest()
+        => GivenCommandWithResult(new CreateYourEntity("Name", "Value"))
+            .Do(response => Assert.Equal(1, response.Version))
+            .Conveyor(response => WhenCommandWithResult(new UpdateYourEntity(response.PartitionKeys.AggregateId, "NewValue")))
+            .Do(response => Assert.Equal(2, response.Version))
+            .Conveyor(response => ThenGetAggregateWithResult<YourEntityProjector>(response.PartitionKeys))
+            .Conveyor(aggregate => aggregate.Payload.ToResultBox().Cast<YourEntity>())
+            .Do(payload => Assert.Equal("NewValue", payload.Value))
+            .Conveyor(_ => ThenQueryWithResult(new YourEntityExistsQuery("Name")))
+            .Do(Assert.True)
+            .UnwrapBox();
+}
+```
+
+Key points:
+- `Conveyor` is used to chain operations, transforming the result of one operation into the input for the next
+- `Do` is used to perform assertions or side effects without changing the result
+- `UnwrapBox` at the end unwraps the final ResultBox, throwing an exception if any step failed
+
+### 3. Orleans Testing with SekibanOrleansTestBase
+
+For testing with Orleans integration, use the `SekibanOrleansTestBase` class from the `Sekiban.Pure.Orleans.xUnit` namespace:
+
+```csharp
+public class YourOrleansTests : SekibanOrleansTestBase<YourOrleansTests>
+{
+    public override SekibanDomainTypes GetDomainTypes() => 
+        YourDomainTypes.Generate(YourEventsJsonContext.Default.Options);
+
+    [Fact]
+    public void OrleansTest() =>
+        GivenCommandWithResult(new CreateYourEntity("Name", "Value"))
+            .Do(response => Assert.Equal(1, response.Version))
+            .Conveyor(response => WhenCommandWithResult(new UpdateYourEntity(response.PartitionKeys.AggregateId, "NewValue")))
+            .Do(response => Assert.Equal(2, response.Version))
+            .Conveyor(response => ThenGetAggregateWithResult<YourEntityProjector>(response.PartitionKeys))
+            .Conveyor(aggregate => aggregate.Payload.ToResultBox().Cast<YourEntity>())
+            .Do(payload => Assert.Equal("NewValue", payload.Value))
+            .Conveyor(_ => ThenGetMultiProjectorWithResult<AggregateListProjector<YourEntityProjector>>())
+            .Do(projector => 
+            {
+                Assert.Equal(1, projector.Aggregates.Values.Count());
+                var entity = (YourEntity)projector.Aggregates.Values.First().Payload;
+                Assert.Equal("NewValue", entity.Value);
+            })
+            .UnwrapBox();
+            
+    [Fact]
+    public void TestSerializable()
+    {
+        // Test that commands are serializable (important for Orleans)
+        CheckSerializability(new CreateYourEntity("Name", "Value"));
+    }
+}
+```
+
+### 4. Manual Testing with InMemorySekibanExecutor
+
+For more complex scenarios or custom test setups, you can manually create an `InMemorySekibanExecutor`:
+
+```csharp
+[Fact]
+public async Task ManualExecutorTest()
+{
+    // Create an in-memory executor
+    var executor = new InMemorySekibanExecutor(
+        YourDomainTypes.Generate(YourEventsJsonContext.Default.Options),
+        new FunctionCommandMetadataProvider(() => "test"),
+        new Repository(),
+        new ServiceCollection().BuildServiceProvider());
+
+    // Execute a command
+    var result = await executor.CommandAsync(new CreateYourEntity("Name", "Value"));
+    Assert.True(result.IsSuccess);
+    var value = result.GetValue();
+    Assert.NotNull(value);
+    Assert.Equal(1, value.Version);
+    var aggregateId = value.PartitionKeys.AggregateId;
+
+    // Load the aggregate
+    var aggregateResult = await executor.LoadAggregateAsync<YourEntityProjector>(
+        PartitionKeys.Existing<YourEntityProjector>(aggregateId));
+    Assert.True(aggregateResult.IsSuccess);
+    var aggregate = aggregateResult.GetValue();
+    var entity = (YourEntity)aggregate.Payload;
+    Assert.Equal("Name", entity.Name);
+    Assert.Equal("Value", entity.Value);
+}
+```
+
+## SekibanDomainTypes and Source Generation
+
+### Understanding SekibanDomainTypes
+
+Sekiban uses source generation to create domain type registrations at build time. This is a key part of the framework that simplifies domain model registration and ensures type safety.
+
+```csharp
+// This class is automatically generated by Sekiban.Pure.SourceGenerator
+// You don't need to create it manually
+public static class YourProjectDomainDomainTypes
+{
+    // Used for registering domain types with the DI container
+    public static SekibanDomainTypes Generate(JsonSerializerOptions options) => 
+        // Implementation is generated based on your domain model
+        ...
+
+    // Used for serialization checking
+    public static SekibanDomainTypes Generate() => 
+        Generate(new JsonSerializerOptions());
+}
+```
+
+### Key Points About Source Generation
+
+1. **Naming Convention**:
+   - The generated class follows the pattern `[ProjectName]DomainDomainTypes`
+   - For example, a project named "SchoolManagement" will have `SchoolManagementDomainDomainTypes`
+
+2. **Namespace**:
+   - The generated class is placed in the `[ProjectName].Generated` namespace
+   - For example, `SchoolManagement.Domain.Generated`
+
+3. **Usage in Application**:
+   ```csharp
+   // In Program.cs
+   builder.Services.AddSingleton(
+       YourProjectDomainDomainTypes.Generate(
+           YourProjectDomainEventsJsonContext.Default.Options));
+   ```
+
+4. **Usage in Tests**:
+   ```csharp
+   // In test classes
+   protected override SekibanDomainTypes GetDomainTypes() => 
+       YourProjectDomainDomainTypes.Generate(
+           YourProjectDomainEventsJsonContext.Default.Options);
+   ```
+
+5. **Required Imports for Tests**:
+   ```csharp
+   using YourProject.Domain;
+   using YourProject.Domain.Generated; // Contains the generated types
+   using Sekiban.Pure;
+   using Sekiban.Pure.xUnit;
+   ```
+
+### Troubleshooting Source Generation
+
+1. **Missing Generated Types**:
+   - Ensure the project builds successfully before running tests
+   - Check that all domain types have the required attributes
+   - Look for build warnings related to source generation
+
+2. **Namespace Errors**:
+   - Make sure to import the correct Generated namespace
+   - The namespace is not visible in source files, only in compiled assemblies
+
+3. **Type Not Found Errors**:
+   - Ensure you're using the correct naming convention
+   - Check for typos in the class name
+
+4. **Testing Best Practices**:
+   - Always reference the source-generated types directly
+   - Don't create your own domain types class for testing
+   - Use the same JsonSerializerOptions as the main application
+
+### Testing Best Practices
+
+1. **Test Commands**: Verify that commands produce the expected events and state changes
+2. **Test Projectors**: Verify that projectors correctly apply events to build the aggregate state
+3. **Test Queries**: Verify that queries return the expected results based on the current state
+4. **Test State Transitions**: Verify that state transitions work correctly, especially when using different payload types
+5. **Test Error Cases**: Verify that commands fail appropriately when validation fails
+6. **Test Serialization**: For Orleans tests, verify that commands and events are serializable
+
 ## Common Issues and Solutions
 
 1. **Namespace Errors**: Make sure to use `Sekiban.Pure.*` namespaces, not `Sekiban.Core.*`.

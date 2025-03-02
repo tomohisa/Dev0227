@@ -24,6 +24,12 @@ The School Management System is currently in active development with a focus on 
    - Query optimization
    - Orleans integration
 
+4. **Testing Implementation**
+   - Domain unit testing with Sekiban's in-memory framework
+   - End-to-end testing with Playwright
+   - Test coverage for core domain logic
+   - Relationship validation testing
+
 ## Recent Changes
 
 1. **Student Management**
@@ -50,6 +56,14 @@ The School Management System is currently in active development with a focus on 
    - Enhanced modal dialogs for data entry
    - Improved form validation
 
+5. **Testing Enhancements**
+   - Created SchoolManagement.Domain.Tests project
+   - Implemented comprehensive unit tests for Student entity
+   - Implemented comprehensive unit tests for Teacher entity
+   - Implemented comprehensive unit tests for Class entity
+   - Added relationship tests to verify entity connections
+   - Established testing patterns using Given-When-Then approach
+
 ## Current Decisions and Considerations
 
 1. **Event Sourcing Implementation**
@@ -58,6 +72,7 @@ The School Management System is currently in active development with a focus on 
    - Ensuring correct event projection
    - Managing aggregate relationships
    - Using query-based validation for duplicate checking
+   - Leveraging source-generated domain types
 
 2. **UI/UX Decisions**
    - Using Bootstrap for responsive design
@@ -72,10 +87,12 @@ The School Management System is currently in active development with a focus on 
    - Ensuring responsive UI
 
 4. **Testing Strategy**
+   - Using Sekiban's in-memory testing for domain logic
    - Using Playwright for end-to-end testing
    - Implementing page object models
    - Testing critical user flows
    - Ensuring cross-browser compatibility
+   - Following Given-When-Then pattern for event sourcing tests
 
 ## Next Steps
 
@@ -85,18 +102,21 @@ The School Management System is currently in active development with a focus on 
    - Add data export functionality
    - Improve error handling and user feedback
    - Add additional data validation rules
+   - Expand unit test coverage for edge cases
 
 2. **Medium-term Goals**
    - Implement reporting functionality
    - Add user authentication and authorization
    - Enhance data visualization
    - Implement advanced filtering and sorting
+   - Add integration tests for API endpoints
 
 3. **Long-term Vision**
    - Extend to additional educational entities (courses, departments)
    - Implement academic performance tracking
    - Add scheduling and calendar functionality
    - Integrate with external systems
+   - Implement comprehensive test automation
 
 ## Open Questions
 
@@ -105,6 +125,7 @@ The School Management System is currently in active development with a focus on 
    - How to handle event schema evolution?
    - What is the best approach for handling large aggregate projections?
    - How to optimize query performance for large datasets?
+   - How to test complex event sourcing scenarios?
 
 2. **Product Questions**
    - What additional features would provide the most value to users?
@@ -119,12 +140,20 @@ The School Management System is currently in active development with a focus on 
    - Managing complex relationships between entities
    - Optimizing query performance
    - Handling concurrent updates
+   - Testing event sourcing systems effectively
 
 2. **UX Challenges**
    - Providing intuitive interfaces for complex operations
    - Ensuring responsive design across devices
    - Balancing feature richness with simplicity
    - Providing appropriate feedback for asynchronous operations
+
+3. **Testing Challenges**
+   - Maintaining test coverage as the domain evolves
+   - Testing complex state transitions
+   - Ensuring tests remain fast and reliable
+   - Balancing unit tests and integration tests
+   - Handling source-generated code in tests
 
 ## Current Priorities
 
@@ -133,15 +162,33 @@ The School Management System is currently in active development with a focus on 
    - Ensure reliable relationship management
    - Optimize query performance
    - Enhance error handling
+   - Maintain comprehensive test coverage
 
 2. **Medium Priority**
    - Improve search and filtering
    - Enhance UI responsiveness
    - Add data validation
    - Implement basic reporting
+   - Expand test scenarios
 
 3. **Low Priority**
    - Add advanced features
    - Implement data export
    - Enhance visualization
    - Add customization options
+   - Implement performance testing
+
+## Lessons Learned
+
+1. **Sekiban Testing**
+   - Sekiban generates domain types at build time via source generation
+   - Tests must reference the generated types from the correct namespace
+   - In-memory testing provides a fast and reliable way to test domain logic
+   - The Given-When-Then pattern works well for event sourcing tests
+   - Need to understand the relationship between commands, events, and projectors
+
+2. **Project Structure**
+   - Separate test projects help maintain clean architecture
+   - Domain tests focus on business logic without UI or database dependencies
+   - End-to-end tests validate the complete system
+   - Test organization should mirror domain structure
