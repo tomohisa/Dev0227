@@ -21,13 +21,17 @@ public record RegisterStudentCommand(
         PartitionKeys.Generate<StudentProjector>();
 
     public ResultBox<EventOrNone> Handle(RegisterStudentCommand command, ICommandContext<IAggregatePayload> context)
-        => EventOrNone.Event(new StudentRegistered(
+    {
+        // For duplicate check, we need to use a different approach
+        // We'll add a validation event to check for duplicates in the API layer
+        return EventOrNone.Event(new StudentRegistered(
             command.Name,
             command.StudentId,
             command.DateOfBirth,
             command.Email,
             command.PhoneNumber,
             command.Address));
+    }
 }
 
 [GenerateSerializer]

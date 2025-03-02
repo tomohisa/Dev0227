@@ -1,0 +1,131 @@
+# School Management System - Project Intelligence
+
+## Project Patterns
+
+### Domain Modeling
+- Use C# records for all domain models to ensure immutability
+- Implement IAggregatePayload interface for all aggregate types
+- Create separate deleted state records (e.g., DeletedStudent) for logical deletion
+- Use nullable reference types for optional properties
+- Initialize collections in constructors to avoid null references
+
+### Event Sourcing
+- Follow Sekiban naming conventions for commands, events, and projectors
+- Use past tense for event names (Created, Updated, Deleted)
+- Use imperative verbs for command names (Register, Update, Delete)
+- Implement proper PartitionKeys generation in commands
+- Use pattern matching in projectors for state transitions
+
+### UI Implementation
+- Use modal dialogs for focused data entry
+- Implement form validation with DataAnnotationsValidator
+- Use Bootstrap grid system for responsive layouts
+- Implement JavaScript interop for modal handling
+- Use EditForm with FormName for form submissions
+
+### API Communication
+- Implement typed API clients for frontend-backend communication
+- Use HttpClient with JSON serialization
+- Handle exceptions and provide user feedback
+- Use cancellation tokens for request cancellation
+
+## User Preferences
+
+### Code Organization
+- Keep related domain concepts in separate files
+- Group commands, events, and projectors by aggregate type
+- Use consistent naming patterns across the codebase
+- Maintain clear separation between domain and UI code
+
+### Development Workflow
+- Run the application using Aspire host with HTTPS profile
+- Access the web frontend at https://localhost:7201
+- Kill running processes with `pkill -9 -f "SchoolManagement."`
+- Restart the application after code changes
+
+### UI Preferences
+- Default viewport scaling to 66% for better UI adaptability
+- Use modal dialogs for data entry forms
+- Provide clear validation messages
+- Implement responsive design for all components
+
+## Critical Implementation Paths
+
+### Student Management
+1. Register student with RegisterStudentCommand
+2. Project to Student state with StudentProjector
+3. Query students with StudentQuery
+4. Update student with UpdateStudentCommand
+5. Assign to class with AssignStudentToClassCommand
+6. Delete student with DeleteStudentCommand
+
+### Teacher Management
+1. Register teacher with RegisterTeacherCommand
+2. Project to Teacher state with TeacherProjector
+3. Query teachers with TeacherQuery
+4. Update teacher with UpdateTeacherCommand
+5. Assign to class with AssignTeacherToClassCommand
+6. Delete teacher with DeleteTeacherCommand
+
+### Class Management
+1. Create class with CreateClassCommand
+2. Project to Class state with ClassProjector
+3. Query classes with ClassQuery
+4. Update class with UpdateClassCommand
+5. Assign teacher with AssignTeacherToClassCommand
+6. Add students with AddStudentToClassCommand
+7. Delete class with DeleteClassCommand
+
+## Known Challenges
+
+### Event Sourcing
+- Handling relationship consistency between aggregates
+- Managing event schema evolution
+- Optimizing query performance for large datasets
+- Ensuring proper event projection
+
+### UI Implementation
+- Ensuring modal dialogs work correctly on mobile devices
+- Managing form state and validation
+- Providing appropriate feedback for asynchronous operations
+- Handling large data sets in tables
+
+### Performance
+- Query optimization for large datasets
+- Efficient projection rebuilding
+- Orleans grain lifecycle management
+- UI responsiveness with large data volumes
+
+## Evolution of Project Decisions
+
+### Initial Decisions
+- Use Sekiban for event sourcing
+- Implement Blazor for web frontend
+- Use Orleans for distributed computing
+- Implement CQRS pattern for separation of concerns
+
+### Refinements
+- Added viewport scaling for better UI adaptability
+- Implemented modal-based forms for focused interactions
+- Enhanced form validation for better user experience
+- Improved error handling and user feedback
+
+## Tool Usage Patterns
+
+### Development
+- Use dotnet CLI for building and running the application
+- Use VS Code or Visual Studio for development
+- Use Playwright for end-to-end testing
+- Use Aspire dashboard for service monitoring
+
+### Debugging
+- Use browser developer tools for frontend debugging
+- Use VS Code debugger for backend debugging
+- Check Aspire dashboard for service status
+- Monitor Orleans silo logs for distributed computing issues
+
+### Testing
+- Run Playwright tests for end-to-end validation
+- Use browser testing for UI verification
+- Implement unit tests for domain logic
+- Test commands and queries independently
