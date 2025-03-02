@@ -14,6 +14,7 @@ The School Management System is in active development with core functionality im
    - ✅ Student deletion
    - ✅ Student-to-class assignment
    - ✅ Student search by name and ID
+   - ✅ Duplicate studentId checking
 
 2. **Teacher Management**
    - ✅ Teacher registration with validation
@@ -21,6 +22,7 @@ The School Management System is in active development with core functionality im
    - ✅ Teacher deletion
    - ✅ Teacher-to-class assignment
    - ✅ Teacher search
+   - ✅ Duplicate teacherId checking
 
 3. **Class Management**
    - ✅ Class creation with validation
@@ -55,6 +57,7 @@ The School Management System is in active development with core functionality im
    - ✅ End-to-end test setup with Playwright
    - ✅ Page object models for UI testing
    - ✅ Basic test scenarios
+   - ✅ Duplicate ID validation tests
 
 ## What's Left to Build
 
@@ -190,6 +193,7 @@ The School Management System is in active development with core functionality im
 2. Implemented relationship management between entities
 3. Added viewport scaling feature for better UI adaptability
 4. Set up end-to-end testing with Playwright
+5. Implemented duplicate ID checking for students and teachers
 
 ### Upcoming Milestones
 

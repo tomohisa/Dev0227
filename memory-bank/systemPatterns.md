@@ -149,7 +149,7 @@ sequenceDiagram
 
 ## Query System
 
-The system implements two types of queries:
+The system implements three types of queries:
 
 1. **List Queries**
    - Return collections of items
@@ -161,12 +161,22 @@ The system implements two types of queries:
    - Used for specific lookups or checks
    - Examples: StudentByIdQuery, ClassByIdQuery
 
+3. **Validation Queries**
+   - Used for data validation
+   - Return boolean results
+   - Examples: StudentIdExistsQuery, TeacherIdExistsQuery
+
 ## Technical Patterns
 
 1. **Immutable Data**
    - C# record types for immutable data structures
    - With-expressions for non-destructive updates
    - Pattern matching for state transitions
+
+2. **Validation Patterns**
+   - Query-based validation for uniqueness constraints
+   - Endpoint filters for API-level validation
+   - Command validation before event generation
 
 2. **Pattern Matching**
    - Extensive use of pattern matching in projectors

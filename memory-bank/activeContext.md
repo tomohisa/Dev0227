@@ -31,11 +31,13 @@ The School Management System is currently in active development with a focus on 
    - Added student-to-class assignment functionality
    - Implemented search by name and student ID
    - Created UI components for student management
+   - Added duplicate studentId checking to prevent duplicates
 
 2. **Teacher Management**
    - Implemented teacher registration, update, and deletion
    - Added teacher-to-class assignment functionality
    - Created UI components for teacher management
+   - Added duplicate teacherId checking to prevent duplicates
 
 3. **Class Management**
    - Implemented class creation, update, and deletion
@@ -55,6 +57,7 @@ The School Management System is currently in active development with a focus on 
    - Implementing proper command validation
    - Ensuring correct event projection
    - Managing aggregate relationships
+   - Using query-based validation for duplicate checking
 
 2. **UI/UX Decisions**
    - Using Bootstrap for responsive design
@@ -81,6 +84,7 @@ The School Management System is currently in active development with a focus on 
    - Implement batch operations for efficiency
    - Add data export functionality
    - Improve error handling and user feedback
+   - Add additional data validation rules
 
 2. **Medium-term Goals**
    - Implement reporting functionality

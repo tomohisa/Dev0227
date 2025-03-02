@@ -15,6 +15,13 @@
 - Use imperative verbs for command names (Register, Update, Delete)
 - Implement proper PartitionKeys generation in commands
 - Use pattern matching in projectors for state transitions
+- Use query-based validation for uniqueness constraints
+
+### Validation Patterns
+- Implement validation queries for uniqueness checks (e.g., StudentIdExistsQuery)
+- Use endpoint filters for API-level validation (e.g., DuplicateCheckEndpointFilters)
+- Validate commands before event generation
+- Return appropriate error messages for validation failures
 
 ### UI Implementation
 - Use modal dialogs for focused data entry
@@ -52,20 +59,22 @@
 ## Critical Implementation Paths
 
 ### Student Management
-1. Register student with RegisterStudentCommand
-2. Project to Student state with StudentProjector
-3. Query students with StudentQuery
-4. Update student with UpdateStudentCommand
-5. Assign to class with AssignStudentToClassCommand
-6. Delete student with DeleteStudentCommand
+1. Check for duplicate studentId with StudentIdExistsQuery
+2. Register student with RegisterStudentCommand
+3. Project to Student state with StudentProjector
+4. Query students with StudentQuery
+5. Update student with UpdateStudentCommand
+6. Assign to class with AssignStudentToClassCommand
+7. Delete student with DeleteStudentCommand
 
 ### Teacher Management
-1. Register teacher with RegisterTeacherCommand
-2. Project to Teacher state with TeacherProjector
-3. Query teachers with TeacherQuery
-4. Update teacher with UpdateTeacherCommand
-5. Assign to class with AssignTeacherToClassCommand
-6. Delete teacher with DeleteTeacherCommand
+1. Check for duplicate teacherId with TeacherIdExistsQuery
+2. Register teacher with RegisterTeacherCommand
+3. Project to Teacher state with TeacherProjector
+4. Query teachers with TeacherQuery
+5. Update teacher with UpdateTeacherCommand
+6. Assign to class with AssignTeacherToClassCommand
+7. Delete teacher with DeleteTeacherCommand
 
 ### Class Management
 1. Create class with CreateClassCommand
