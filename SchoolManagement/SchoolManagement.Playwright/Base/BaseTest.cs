@@ -1,6 +1,9 @@
 using Microsoft.Playwright;
 using NUnit.Framework;
+using System;
 using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace SchoolManagement.Playwright.Base
@@ -11,12 +14,70 @@ namespace SchoolManagement.Playwright.Base
         protected IBrowser? Browser;
         protected IBrowserContext? Context;
         protected IPage? Page;
+        protected Process? AppHostProcess;
+        private readonly HttpClient _httpClient = new HttpClient();
 
         [SetUp]
         public async Task SetUp()
         {
             System.Console.WriteLine("=== SETUP PERFORMANCE DEBUGGING ===");
             var totalSetupSw = Stopwatch.StartNew();
+            
+            // Start AppHost
+            System.Console.WriteLine("Starting AppHost...");
+            var appHostSw = Stopwatch.StartNew();
+            
+            try
+            {
+                // Kill any existing SchoolManagement processes first
+                KillSchoolManagementProcesses();
+                
+                // Get the absolute path to the AppHost directory
+                string currentDirectory = Directory.GetCurrentDirectory();
+                System.Console.WriteLine($"Current directory: {currentDirectory}");
+                
+                // Try multiple possible paths to find the AppHost directory
+                string appHostPath = FindAppHostDirectory(currentDirectory);
+                
+                if (string.IsNullOrEmpty(appHostPath))
+                {
+                    throw new DirectoryNotFoundException("Could not find SchoolManagement.AppHost directory in any of the expected locations");
+                }
+                
+                System.Console.WriteLine($"Found AppHost directory at: {appHostPath}");
+                
+                // Start the AppHost
+                AppHostProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        Arguments = "run --launch-profile https",
+                        WorkingDirectory = appHostPath,
+                        UseShellExecute = true,
+                        CreateNoWindow = false
+                    }
+                };
+                
+                System.Console.WriteLine("Starting AppHost process...");
+                AppHostProcess.Start();
+                
+                // Wait for the server to start
+                System.Console.WriteLine("Waiting for AppHost to start...");
+                bool serverStarted = await WaitForServerToStart();
+                
+                if (!serverStarted)
+                {
+                    System.Console.WriteLine("WARNING: Server did not respond within the timeout period");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Error starting AppHost: {ex.Message}");
+            }
+            
+            appHostSw.Stop();
+            System.Console.WriteLine($"AppHost started in {appHostSw.ElapsedMilliseconds}ms");
             
             // Create Playwright instance
             System.Console.WriteLine("Creating Playwright instance...");
@@ -79,6 +140,217 @@ namespace SchoolManagement.Playwright.Base
             
             teardownSw.Stop();
             System.Console.WriteLine($"Total teardown time: {teardownSw.ElapsedMilliseconds}ms");
+            
+            // Kill SchoolManagement processes
+            System.Console.WriteLine("Killing SchoolManagement processes...");
+            var killSw = Stopwatch.StartNew();
+            
+            KillSchoolManagementProcesses();
+            
+            killSw.Stop();
+            System.Console.WriteLine($"SchoolManagement processes killed in {killSw.ElapsedMilliseconds}ms");
+        }
+        
+        private string FindAppHostDirectory(string startingDirectory)
+        {
+            // List of possible relative paths to try
+            string[] possiblePaths = new[]
+            {
+                "../../SchoolManagement.AppHost",                           // From bin/Debug/net9.0
+                "../../../SchoolManagement.AppHost",                        // From bin/Debug
+                "../../../../SchoolManagement.AppHost",                     // From bin
+                "../../../../../SchoolManagement.AppHost",                  // From Playwright
+                "../../..",                                                 // To solution root
+                "../../../.."                                               // One level up from solution root
+            };
+            
+            // First try to find the solution root by looking for SchoolManagement.sln
+            string solutionRoot = FindSolutionRoot(startingDirectory);
+            
+            if (!string.IsNullOrEmpty(solutionRoot))
+            {
+                string appHostPath = Path.Combine(solutionRoot, "SchoolManagement.AppHost");
+                System.Console.WriteLine($"Checking solution-relative path: {appHostPath}");
+                
+                if (Directory.Exists(appHostPath))
+                {
+                    return appHostPath;
+                }
+            }
+            
+            // Try each possible relative path
+            foreach (string relativePath in possiblePaths)
+            {
+                try
+                {
+                    string fullPath = Path.GetFullPath(Path.Combine(startingDirectory, relativePath));
+                    System.Console.WriteLine($"Checking path: {fullPath}");
+                    
+                    if (Directory.Exists(fullPath))
+                    {
+                        // Check if this is the AppHost directory
+                        if (Path.GetFileName(fullPath) == "SchoolManagement.AppHost")
+                        {
+                            return fullPath;
+                        }
+                        
+                        // Check if AppHost is a subdirectory
+                        string appHostSubdir = Path.Combine(fullPath, "SchoolManagement.AppHost");
+                        if (Directory.Exists(appHostSubdir))
+                        {
+                            return appHostSubdir;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Console.WriteLine($"Error checking path: {ex.Message}");
+                }
+            }
+            
+            // As a last resort, try to find it from the root of the project
+            try
+            {
+                string projectRoot = "/Users/tomohisa/dev/test/Dev0227/SchoolManagement";
+                System.Console.WriteLine($"Trying hardcoded project root: {projectRoot}");
+                
+                if (Directory.Exists(projectRoot))
+                {
+                    string appHostPath = Path.Combine(projectRoot, "SchoolManagement.AppHost");
+                    if (Directory.Exists(appHostPath))
+                    {
+                        return appHostPath;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Error checking hardcoded path: {ex.Message}");
+            }
+            
+            return null;
+        }
+        
+        private string FindSolutionRoot(string startingDirectory)
+        {
+            try
+            {
+                string directory = startingDirectory;
+                
+                // Go up the directory tree looking for SchoolManagement.sln
+                while (!string.IsNullOrEmpty(directory))
+                {
+                    System.Console.WriteLine($"Checking for solution in: {directory}");
+                    
+                    // Check if the solution file exists in this directory
+                    if (File.Exists(Path.Combine(directory, "SchoolManagement.sln")))
+                    {
+                        System.Console.WriteLine($"Found solution root at: {directory}");
+                        return directory;
+                    }
+                    
+                    // Check if we've reached the root directory
+                    string parent = Directory.GetParent(directory)?.FullName;
+                    if (string.IsNullOrEmpty(parent) || parent == directory)
+                    {
+                        break;
+                    }
+                    
+                    directory = parent;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Error finding solution root: {ex.Message}");
+            }
+            
+            return null;
+        }
+        
+        private async Task<bool> WaitForServerToStart()
+        {
+            const int maxRetries = 30;
+            const int retryDelayMs = 1000;
+            
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    System.Console.WriteLine($"Checking if server is running (attempt {i+1}/{maxRetries})...");
+                    var response = await _httpClient.GetAsync(BaseUrl);
+                    
+                    if (response.IsSuccessStatusCode)
+                    {
+                        System.Console.WriteLine("Server is running!");
+                        return true;
+                    }
+                    
+                    System.Console.WriteLine($"Server returned status code: {response.StatusCode}");
+                }
+                catch (HttpRequestException ex)
+                {
+                    System.Console.WriteLine($"Server not yet available: {ex.Message}");
+                }
+                
+                await Task.Delay(retryDelayMs);
+            }
+            
+            return false;
+        }
+        
+        private void KillSchoolManagementProcesses()
+        {
+            try
+            {
+                // Kill the AppHost process if we started it
+                if (AppHostProcess != null && !AppHostProcess.HasExited)
+                {
+                    try
+                    {
+                        AppHostProcess.Kill();
+                        System.Console.WriteLine("AppHost process killed");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Console.WriteLine($"Error killing AppHost process: {ex.Message}");
+                    }
+                }
+                
+                // Use pkill to kill all SchoolManagement processes
+                var pkillProcess = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "pkill",
+                        Arguments = "-9 -f \"SchoolManagement.\"",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    }
+                };
+                
+                pkillProcess.Start();
+                string output = pkillProcess.StandardOutput.ReadToEnd();
+                string error = pkillProcess.StandardError.ReadToEnd();
+                pkillProcess.WaitForExit();
+                
+                if (!string.IsNullOrEmpty(output))
+                {
+                    System.Console.WriteLine($"pkill output: {output}");
+                }
+                
+                if (!string.IsNullOrEmpty(error))
+                {
+                    System.Console.WriteLine($"pkill error: {error}");
+                }
+                
+                System.Console.WriteLine("All SchoolManagement processes killed");
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Error in KillSchoolManagementProcesses: {ex.Message}");
+            }
         }
 
         protected async Task CloseAnyOpenModals()
