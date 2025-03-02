@@ -38,12 +38,14 @@ The School Management System is currently in active development with a focus on 
    - Implemented search by name and student ID
    - Created UI components for student management
    - Added duplicate studentId checking to prevent duplicates
+   - Moved duplicate checking logic to domain workflows for better separation of concerns
 
 2. **Teacher Management**
    - Implemented teacher registration, update, and deletion
    - Added teacher-to-class assignment functionality
    - Created UI components for teacher management
    - Added duplicate teacherId checking to prevent duplicates
+   - Moved duplicate checking logic to domain workflows for better separation of concerns
 
 3. **Class Management**
    - Implemented class creation, update, and deletion
@@ -186,9 +188,17 @@ The School Management System is currently in active development with a focus on 
    - In-memory testing provides a fast and reliable way to test domain logic
    - The Given-When-Then pattern works well for event sourcing tests
    - Need to understand the relationship between commands, events, and projectors
+   - SekibanInMemoryTestBase provides an Executor property that implements ISekibanExecutor for testing workflows
 
 2. **Project Structure**
    - Separate test projects help maintain clean architecture
    - Domain tests focus on business logic without UI or database dependencies
    - End-to-end tests validate the complete system
    - Test organization should mirror domain structure
+   - Domain workflows should be placed in a dedicated Workflows folder
+
+3. **Dependency Abstraction**
+   - Use ISekibanExecutor interface instead of concrete SekibanOrleansExecutor for better testability
+   - Domain workflows should depend on abstractions rather than concrete implementations
+   - The ISekibanExecutor interface is in the Sekiban.Pure.Executors namespace
+   - This approach enables easier unit testing and better separation of concerns

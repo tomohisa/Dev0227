@@ -135,8 +135,16 @@ apiRoute
             [FromBody] RegisterStudentCommand command,
             [FromServices] SekibanOrleansExecutor executor) => 
         {
-            // Check for duplicate studentId
-            return await DuplicateCheckEndpointFilters.CheckStudentIdDuplicate(command, executor);
+            // Check for duplicate studentId using the workflow
+            var result = await SchoolManagement.Domain.Workflows.DuplicateCheckWorkflows.CheckStudentIdDuplicate(command, executor);
+            if (result.IsDuplicate)
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Duplicate StudentId",
+                    detail: result.ErrorMessage);
+            }
+            return result.CommandResult;
         })
     .WithName("RegisterStudent")
     .WithOpenApi();
@@ -209,8 +217,16 @@ apiRoute
             [FromBody] RegisterTeacherCommand command,
             [FromServices] SekibanOrleansExecutor executor) => 
         {
-            // Check for duplicate teacherId
-            return await DuplicateCheckEndpointFilters.CheckTeacherIdDuplicate(command, executor);
+            // Check for duplicate teacherId using the workflow
+            var result = await SchoolManagement.Domain.Workflows.DuplicateCheckWorkflows.CheckTeacherIdDuplicate(command, executor);
+            if (result.IsDuplicate)
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Duplicate TeacherId",
+                    detail: result.ErrorMessage);
+            }
+            return result.CommandResult;
         })
     .WithName("RegisterTeacher")
     .WithOpenApi();
