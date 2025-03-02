@@ -1,140 +1,108 @@
-# School Management System - Project Intelligence
+# Sekiban Testing Guidelines
 
-## Project Patterns
+## Domain Testing Patterns
 
-### Domain Modeling
-- Use C# records for all domain models to ensure immutability
-- Implement IAggregatePayload interface for all aggregate types
-- Create separate deleted state records (e.g., DeletedStudent) for logical deletion
-- Use nullable reference types for optional properties
-- Initialize collections in constructors to avoid null references
+1. **Use SekibanInMemoryTestBase for Domain Tests**
+   - Inherit from `SekibanInMemoryTestBase` for domain unit tests
+   - Override `GetDomainTypes()` to provide domain types
+   - Use `SchoolManagementDomainDomainTypes.Generate()` from the Generated namespace
 
-### Event Sourcing
-- Follow Sekiban naming conventions for commands, events, and projectors
-- Use past tense for event names (Created, Updated, Deleted)
-- Use imperative verbs for command names (Register, Update, Delete)
-- Implement proper PartitionKeys generation in commands
-- Use pattern matching in projectors for state transitions
-- Use query-based validation for uniqueness constraints
+2. **Follow Given-When-Then Pattern**
+   - Use `GivenCommand()` for initial setup
+   - Use `WhenCommand()` for the action being tested
+   - Use `ThenGetAggregate<TProjector>()` to verify the result
+   - Use `ThenQuery()` to verify query results
 
-### Validation Patterns
-- Implement validation queries for uniqueness checks (e.g., StudentIdExistsQuery)
-- Use endpoint filters for API-level validation (e.g., DuplicateCheckEndpointFilters)
-- Validate commands before event generation
-- Return appropriate error messages for validation failures
+3. **Test Command Behavior**
+   - Verify commands produce the expected events
+   - Check event version numbers
+   - Verify aggregate state after command execution
+   - Test both success and failure scenarios
 
-### UI Implementation
-- Use modal dialogs for focused data entry
-- Implement form validation with DataAnnotationsValidator
-- Use Bootstrap grid system for responsive layouts
-- Implement JavaScript interop for modal handling
-- Use EditForm with FormName for form submissions
+4. **Test Projector Behavior**
+   - Verify events are correctly applied by projectors
+   - Test state transitions between different aggregate types
+   - Verify property values after projection
 
-### API Communication
-- Implement typed API clients for frontend-backend communication
-- Use HttpClient with JSON serialization
-- Handle exceptions and provide user feedback
-- Use cancellation tokens for request cancellation
+5. **Test Relationships**
+   - Verify bidirectional relationships are maintained
+   - Test adding and removing relationships
+   - Check for proper cleanup when entities are deleted
 
-## User Preferences
+## Namespace Considerations
 
-### Code Organization
-- Keep related domain concepts in separate files
-- Group commands, events, and projectors by aggregate type
-- Use consistent naming patterns across the codebase
-- Maintain clear separation between domain and UI code
+1. **Required Imports**
+   ```csharp
+   using Sekiban.Pure.xUnit;
+   using Xunit;
+   using System;
+   using SchoolManagement.Domain;
+   using SchoolManagement.Domain.Generated;
+   using Sekiban.Pure;
+   ```
 
-### Development Workflow
-- Run the application using Aspire host with HTTPS profile
-- Access the web frontend at https://localhost:7201
-- Kill running processes with `pkill -9 -f "SchoolManagement."`
-- Restart the application after code changes
+2. **Source Generation**
+   - Sekiban generates domain types at build time
+   - Always use the generated `SchoolManagementDomainDomainTypes` class
+   - Don't create custom domain type classes for testing
 
-### UI Preferences
-- Default viewport scaling to 66% for better UI adaptability
-- Use modal dialogs for data entry forms
-- Provide clear validation messages
-- Implement responsive design for all components
+## Test Organization
 
-## Critical Implementation Paths
+1. **Separate Test Classes by Entity**
+   - StudentTests for Student entity
+   - TeacherTests for Teacher entity
+   - ClassTests for Class entity
+   - RelationshipTests for cross-entity relationships
 
-### Student Management
-1. Check for duplicate studentId with StudentIdExistsQuery
-2. Register student with RegisterStudentCommand
-3. Project to Student state with StudentProjector
-4. Query students with StudentQuery
-5. Update student with UpdateStudentCommand
-6. Assign to class with AssignStudentToClassCommand
-7. Delete student with DeleteStudentCommand
+2. **Descriptive Test Names**
+   - Use format: `[Action]_Should[ExpectedResult]`
+   - Example: `RegisterStudent_ShouldCreateStudent`
+   - Example: `DeleteStudent_ShouldChangeStateToDeletedStudent`
 
-### Teacher Management
-1. Check for duplicate teacherId with TeacherIdExistsQuery
-2. Register teacher with RegisterTeacherCommand
-3. Project to Teacher state with TeacherProjector
-4. Query teachers with TeacherQuery
-5. Update teacher with UpdateTeacherCommand
-6. Assign to class with AssignTeacherToClassCommand
-7. Delete teacher with DeleteTeacherCommand
+3. **Test Structure**
+   - Arrange: Set up initial state with commands
+   - Act: Execute the command being tested
+   - Assert: Verify the expected outcome
 
-### Class Management
-1. Create class with CreateClassCommand
-2. Project to Class state with ClassProjector
-3. Query classes with ClassQuery
-4. Update class with UpdateClassCommand
-5. Assign teacher with AssignTeacherToClassCommand
-6. Add students with AddStudentToClassCommand
-7. Delete class with DeleteClassCommand
+## Common Mistakes to Avoid
 
-## Known Challenges
+1. **Namespace Errors**
+   - Missing `SchoolManagement.Domain.Generated` namespace
+   - Not importing `Sekiban.Pure` for SekibanDomainTypes
 
-### Event Sourcing
-- Handling relationship consistency between aggregates
-- Managing event schema evolution
-- Optimizing query performance for large datasets
-- Ensuring proper event projection
+2. **Domain Type Errors**
+   - Trying to create custom domain types instead of using generated ones
+   - Using wrong constructor parameters for SekibanDomainTypes
 
-### UI Implementation
-- Ensuring modal dialogs work correctly on mobile devices
-- Managing form state and validation
-- Providing appropriate feedback for asynchronous operations
-- Handling large data sets in tables
+3. **Test Structure Issues**
+   - Not following the Given-When-Then pattern
+   - Not verifying both command execution and resulting state
+   - Not testing edge cases and error scenarios
 
-### Performance
-- Query optimization for large datasets
-- Efficient projection rebuilding
-- Orleans grain lifecycle management
-- UI responsiveness with large data volumes
+## Sekiban Source Generation Insights
 
-## Evolution of Project Decisions
+1. **Understanding SchoolManagementDomainDomainTypes**
+   - This class is automatically generated by Sekiban.Pure.SourceGenerator
+   - The naming convention is [ProjectName]DomainTypes (e.g., SchoolManagementDomainDomainTypes)
+   - It's generated in the [ProjectName].Generated namespace
+   - It contains all the domain type information needed for Sekiban to work
 
-### Initial Decisions
-- Use Sekiban for event sourcing
-- Implement Blazor for web frontend
-- Use Orleans for distributed computing
-- Implement CQRS pattern for separation of concerns
+2. **What I Wish I Knew About Source Generation**
+   - The Generated namespace is created at build time, not visible in the source code
+   - No need to create your own domain types class for testing
+   - The Generate() method has two overloads:
+     - `Generate()` - No parameters version for serialization checking
+     - `Generate(JsonSerializerOptions options)` - For actual domain type registration
+   - Always reference the source-generated types directly in tests
 
-### Refinements
-- Added viewport scaling for better UI adaptability
-- Implemented modal-based forms for focused interactions
-- Enhanced form validation for better user experience
-- Improved error handling and user feedback
+3. **Debugging Source Generation**
+   - If you can't find the generated types, check the build output
+   - Make sure the project builds successfully before running tests
+   - The source generator requires all domain types to be properly decorated with attributes
+   - Look for the Generated namespace in the compiled assembly, not in source files
 
-## Tool Usage Patterns
-
-### Development
-- Use dotnet CLI for building and running the application
-- Use VS Code or Visual Studio for development
-- Use Playwright for end-to-end testing
-- Use Aspire dashboard for service monitoring
-
-### Debugging
-- Use browser developer tools for frontend debugging
-- Use VS Code debugger for backend debugging
-- Check Aspire dashboard for service status
-- Monitor Orleans silo logs for distributed computing issues
-
-### Testing
-- Run Playwright tests for end-to-end validation
-- Use browser testing for UI verification
-- Implement unit tests for domain logic
-- Test commands and queries independently
+4. **Documentation Improvements**
+   - Clearer explanation of source generation in Sekiban
+   - Examples of how to reference generated types in tests
+   - Explanation of naming conventions for generated types
+   - Troubleshooting guide for common source generation issues

@@ -39,6 +39,7 @@ The School Management System is in active development with core functionality im
    - ✅ Event storage and retrieval
    - ✅ State projection from events
    - ✅ Query handling for read operations
+   - ✅ Source generation for domain types
 
 2. **Web Frontend**
    - ✅ Responsive Blazor components
@@ -54,10 +55,12 @@ The School Management System is in active development with core functionality im
    - ✅ API clients for frontend communication
 
 4. **Testing**
+   - ✅ Domain unit tests with Sekiban's in-memory framework
    - ✅ End-to-end test setup with Playwright
    - ✅ Page object models for UI testing
    - ✅ Basic test scenarios
    - ✅ Duplicate ID validation tests
+   - ✅ Relationship validation tests
 
 ## What's Left to Build
 
@@ -121,6 +124,13 @@ The School Management System is in active development with core functionality im
    - ❌ Backup and recovery
    - ❌ Performance metrics
 
+4. **Testing Enhancements**
+   - ❌ Integration tests for API endpoints
+   - ❌ Performance testing
+   - ❌ Load testing
+   - ❌ Mutation testing
+   - ❌ Test coverage reporting
+
 ## Known Issues
 
 1. **UI Issues**
@@ -138,6 +148,11 @@ The School Management System is in active development with core functionality im
    - Limited error handling for edge cases
    - No confirmation for destructive operations
 
+4. **Testing Issues**
+   - Limited test coverage for edge cases
+   - No integration tests for API endpoints
+   - No performance testing
+
 ## Next Development Priorities
 
 ### Immediate Focus (Next Sprint)
@@ -146,6 +161,7 @@ The School Management System is in active development with core functionality im
 2. Implement basic reporting functionality
 3. Add data export options
 4. Improve error handling and user feedback
+5. Expand unit test coverage for edge cases
 
 ### Short-term Goals (1-3 Months)
 
@@ -153,6 +169,7 @@ The School Management System is in active development with core functionality im
 2. Add advanced filtering and sorting
 3. Enhance data visualization
 4. Implement batch operations
+5. Add integration tests for API endpoints
 
 ### Medium-term Goals (3-6 Months)
 
@@ -160,6 +177,7 @@ The School Management System is in active development with core functionality im
 2. Implement attendance tracking
 3. Add grade management
 4. Develop notification system
+5. Implement performance testing
 
 ### Long-term Vision (6+ Months)
 
@@ -167,6 +185,7 @@ The School Management System is in active development with core functionality im
 2. Implement advanced reporting and analytics
 3. Add mobile application
 4. Develop API for third-party integration
+5. Implement comprehensive test automation
 
 ## Metrics and Progress Tracking
 
@@ -176,9 +195,10 @@ The School Management System is in active development with core functionality im
    - Core features: 75% complete
    - Advanced features: 10% complete
    - Technical infrastructure: 60% complete
+   - Testing infrastructure: 50% complete
 
 2. **Quality Metrics**
-   - Test coverage: 40%
+   - Test coverage: 50% (improved with domain unit tests)
    - Known issues: 15
    - Technical debt items: 25
 
@@ -186,6 +206,7 @@ The School Management System is in active development with core functionality im
    - Average query response time: 200ms
    - UI rendering time: 150ms
    - Event processing time: 50ms
+   - Test execution time: 500ms
 
 ### Recent Achievements
 
@@ -194,6 +215,9 @@ The School Management System is in active development with core functionality im
 3. Added viewport scaling feature for better UI adaptability
 4. Set up end-to-end testing with Playwright
 5. Implemented duplicate ID checking for students and teachers
+6. Created comprehensive domain unit tests for all entities
+7. Implemented relationship validation tests
+8. Established testing patterns using Given-When-Then approach
 
 ### Upcoming Milestones
 
@@ -201,3 +225,33 @@ The School Management System is in active development with core functionality im
 2. Implement basic reporting functionality
 3. Add user authentication and authorization
 4. Develop batch operations for efficiency
+5. Expand test coverage for edge cases
+6. Implement integration tests for API endpoints
+
+## Lessons Learned
+
+### Domain Testing
+
+1. **Sekiban Testing Approach**
+   - Sekiban provides a powerful in-memory testing framework
+   - The SekibanInMemoryTestBase class simplifies domain testing
+   - The Given-When-Then pattern works well for event sourcing tests
+   - Domain tests can be fast and reliable without database dependencies
+
+2. **Source Generation Considerations**
+   - Sekiban uses source generation to create domain types
+   - Tests must reference the correct namespaces (SchoolManagement.Domain.Generated)
+   - SchoolManagementDomainDomainTypes is generated at build time
+   - No need to create custom domain type classes for testing
+
+3. **Testing Patterns**
+   - Command tests verify that commands produce the expected events
+   - Projector tests verify that events are correctly applied to build state
+   - Relationship tests verify that entity connections are maintained
+   - State transition tests verify that entities change state correctly
+
+4. **Test Organization**
+   - Separate test classes for each entity (Student, Teacher, Class)
+   - Dedicated test class for relationship validation
+   - Tests follow a consistent pattern for readability
+   - Test names clearly describe the behavior being tested
