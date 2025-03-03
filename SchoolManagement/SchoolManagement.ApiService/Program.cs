@@ -10,6 +10,10 @@ using Sekiban.Pure.CosmosDb;
 using Sekiban.Pure.Orleans.Parts;
 using Sekiban.Pure.Postgres;
 using SchoolManagement.ApiService;
+using SchoolManagement.Domain.Aggregates.Classes.Commands;
+using SchoolManagement.Domain.Aggregates.Classes.Queries;
+using SchoolManagement.Domain.Aggregates.Students.Commands;
+using SchoolManagement.Domain.Aggregates.Students.Queries;
 
 var builder = WebApplication.CreateBuilder(args);
 

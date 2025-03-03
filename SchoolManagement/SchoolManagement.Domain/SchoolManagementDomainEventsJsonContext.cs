@@ -1,4 +1,8 @@
 using System.Text.Json.Serialization;
+using SchoolManagement.Domain.Aggregates.Classes.Events;
+using SchoolManagement.Domain.Aggregates.Students.Events;
+using SchoolManagement.Domain.Aggregates.Students.Queries;
+using SchoolManagement.Domain.Aggregates.Teachers.Events;
 using Sekiban.Pure.Events;
 
 namespace SchoolManagement.Domain;
@@ -20,44 +24,44 @@ namespace SchoolManagement.Domain;
 [JsonSerializable(typeof(SchoolManagement.Domain.WeatherForecastLocationUpdated))]
 
 // Student Events
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.StudentRegistered>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.StudentRegistered))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.StudentDeleted>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.StudentDeleted))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.StudentUpdated>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.StudentUpdated))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.StudentAssignedToClass>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.StudentAssignedToClass))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.StudentRemovedFromClass>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.StudentRemovedFromClass))]
+[JsonSerializable(typeof(EventDocument<StudentRegistered>))]
+[JsonSerializable(typeof(StudentRegistered))]
+[JsonSerializable(typeof(EventDocument<StudentDeleted>))]
+[JsonSerializable(typeof(StudentDeleted))]
+[JsonSerializable(typeof(EventDocument<StudentUpdated>))]
+[JsonSerializable(typeof(StudentUpdated))]
+[JsonSerializable(typeof(EventDocument<StudentAssignedToClass>))]
+[JsonSerializable(typeof(StudentAssignedToClass))]
+[JsonSerializable(typeof(EventDocument<StudentRemovedFromClass>))]
+[JsonSerializable(typeof(StudentRemovedFromClass))]
 
 // Teacher Events
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.TeacherRegistered>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.TeacherRegistered))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.TeacherDeleted>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.TeacherDeleted))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.TeacherUpdated>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.TeacherUpdated))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.TeacherAssignedToClass>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.TeacherAssignedToClass))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.TeacherRemovedFromClass>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.TeacherRemovedFromClass))]
+[JsonSerializable(typeof(EventDocument<TeacherRegistered>))]
+[JsonSerializable(typeof(TeacherRegistered))]
+[JsonSerializable(typeof(EventDocument<TeacherDeleted>))]
+[JsonSerializable(typeof(TeacherDeleted))]
+[JsonSerializable(typeof(EventDocument<TeacherUpdated>))]
+[JsonSerializable(typeof(TeacherUpdated))]
+[JsonSerializable(typeof(EventDocument<TeacherAssignedToClass>))]
+[JsonSerializable(typeof(TeacherAssignedToClass))]
+[JsonSerializable(typeof(EventDocument<TeacherRemovedFromClass>))]
+[JsonSerializable(typeof(TeacherRemovedFromClass))]
 
 // Class Events
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.ClassCreated>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.ClassCreated))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.ClassDeleted>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.ClassDeleted))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.ClassUpdated>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.ClassUpdated))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.ClassTeacherAssigned>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.ClassTeacherAssigned))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.ClassTeacherRemoved>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.ClassTeacherRemoved))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.ClassStudentAdded>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.ClassStudentAdded))]
-[JsonSerializable(typeof(EventDocument<SchoolManagement.Domain.ClassStudentRemoved>))]
-[JsonSerializable(typeof(SchoolManagement.Domain.ClassStudentRemoved))]
+[JsonSerializable(typeof(EventDocument<ClassCreated>))]
+[JsonSerializable(typeof(ClassCreated))]
+[JsonSerializable(typeof(EventDocument<ClassDeleted>))]
+[JsonSerializable(typeof(ClassDeleted))]
+[JsonSerializable(typeof(EventDocument<ClassUpdated>))]
+[JsonSerializable(typeof(ClassUpdated))]
+[JsonSerializable(typeof(EventDocument<ClassTeacherAssigned>))]
+[JsonSerializable(typeof(ClassTeacherAssigned))]
+[JsonSerializable(typeof(EventDocument<ClassTeacherRemoved>))]
+[JsonSerializable(typeof(ClassTeacherRemoved))]
+[JsonSerializable(typeof(EventDocument<ClassStudentAdded>))]
+[JsonSerializable(typeof(ClassStudentAdded))]
+[JsonSerializable(typeof(EventDocument<ClassStudentRemoved>))]
+[JsonSerializable(typeof(ClassStudentRemoved))]
 
 public partial class SchoolManagementDomainEventsJsonContext : JsonSerializerContext
 {
