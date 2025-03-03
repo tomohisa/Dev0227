@@ -3,7 +3,7 @@ using Sekiban.Pure.Aggregates;
 namespace SchoolManagement.Domain;
 
 [GenerateSerializer]
-public record Teacher(
+public record DeletedTeacher(
     string Name,
     string TeacherId,
     string Email,
@@ -13,7 +13,5 @@ public record Teacher(
     List<Guid> ClassIds = null
 ) : IAggregatePayload
 {
-    public Teacher() : this("", "", "", "", "", "", new List<Guid>()) { }
-    
     public List<Guid> ClassIds { get; init; } = ClassIds ?? new List<Guid>();
 }
