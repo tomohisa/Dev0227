@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using SchoolManagement.Domain;
+using SchoolManagement.Domain.Aggregates.Classes.Queries;
+using SchoolManagement.Domain.Aggregates.Students.Queries;
 
 namespace SchoolManagement.Web.Components.Pages
 {

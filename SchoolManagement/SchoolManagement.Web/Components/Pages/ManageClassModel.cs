@@ -1,4 +1,5 @@
 using SchoolManagement.Domain;
+using SchoolManagement.Domain.Aggregates.Students.Queries;
 
 namespace SchoolManagement.Web.Components.Pages;
 

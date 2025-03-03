@@ -3,6 +3,8 @@ using ResultBoxes;
 using Sekiban.Pure.Command.Executor;
 using Sekiban.Pure.Orleans.Parts;
 using SchoolManagement.Domain;
+using SchoolManagement.Domain.Aggregates.Students.Commands;
+using SchoolManagement.Domain.Aggregates.Students.Queries;
 
 namespace SchoolManagement.ApiService;
 

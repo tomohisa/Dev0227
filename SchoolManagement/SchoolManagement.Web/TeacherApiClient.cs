@@ -1,4 +1,5 @@
 using SchoolManagement.Domain;
+using SchoolManagement.Domain.Aggregates.Classes.Commands;
 
 namespace SchoolManagement.Web;
 

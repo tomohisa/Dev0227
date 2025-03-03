@@ -3,6 +3,7 @@ using Xunit;
 using System;
 using System.Linq;
 using SchoolManagement.Domain;
+using SchoolManagement.Domain.Aggregates.Classes.Commands;
 using SchoolManagement.Domain.Generated;
 using Sekiban.Pure;
 

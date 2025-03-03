@@ -7,6 +7,7 @@ using SchoolManagement.Domain.Workflows;
 using Xunit;
 using System;
 using System.Threading.Tasks;
+using SchoolManagement.Domain.Aggregates.Students.Commands;
 
 namespace SchoolManagement.Domain.Tests;
 

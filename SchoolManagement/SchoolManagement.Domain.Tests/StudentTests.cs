@@ -2,6 +2,10 @@ using Sekiban.Pure.xUnit;
 using Xunit;
 using System;
 using SchoolManagement.Domain;
+using SchoolManagement.Domain.Aggregates.Classes.Commands;
+using SchoolManagement.Domain.Aggregates.Students;
+using SchoolManagement.Domain.Aggregates.Students.Commands;
+using SchoolManagement.Domain.Aggregates.Students.Payloads;
 using SchoolManagement.Domain.Generated;
 using Sekiban.Pure;
 
