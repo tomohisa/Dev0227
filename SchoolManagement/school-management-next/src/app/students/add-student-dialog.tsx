@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { registerStudent } from "@/lib/client/students";
+import { registerStudent } from "./actions";
 
 interface AddStudentDialogProps {
   onSuccess?: () => void;
@@ -72,7 +72,7 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
         return;
       }
       
-      await registerStudent({
+      const result = await registerStudent({
         name: formData.name,
         studentId: formData.studentId,
         dateOfBirth,
@@ -81,22 +81,25 @@ export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
         address: formData.address,
       });
       
-      setOpen(false);
-      setFormData({
-        name: "",
-        studentId: "",
-        dateOfBirth: "",
-        email: "",
-        phoneNumber: "",
-        address: "",
-      });
-      
-      // Call onSuccess callback if provided
-      onSuccess?.();
-      
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setOpen(false);
+        setFormData({
+          name: "",
+          studentId: "",
+          dateOfBirth: "",
+          email: "",
+          phoneNumber: "",
+          address: "",
+        });
+        
+        // Call onSuccess callback if provided
+        onSuccess?.();
+      }
     } catch (err: any) {
       console.error("Error registering student:", err);
-      setError(err.message || "Failed to register student. Please try again.");
+      setError("Failed to register student. Please try again.");
     } finally {
       setLoading(false);
     }
