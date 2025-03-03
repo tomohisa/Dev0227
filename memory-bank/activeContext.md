@@ -94,6 +94,9 @@ The School Management System is currently in active development with a focus on 
    - **NEW**: Implemented server actions for client-server communication
    - **NEW**: Separated client and server components for better architecture
    - **NEW**: Improved error handling and state management
+   - **NEW**: Reorganized domain folder structure following DDD principles
+   - **NEW**: Created dedicated folders for aggregates, commands, events, queries, and payloads
+   - **NEW**: Updated namespaces to match folder structure
 
 ## Current Decisions and Considerations
 

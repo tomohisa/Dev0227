@@ -178,17 +178,52 @@ The system implements three types of queries:
    - Endpoint filters for API-level validation
    - Command validation before event generation
 
-2. **Pattern Matching**
+3. **Pattern Matching**
    - Extensive use of pattern matching in projectors
    - Type-based dispatch for event handling
    - Tuple patterns for state transitions
 
-3. **Result Handling**
+4. **Result Handling**
    - ResultBox pattern for error handling
    - Explicit success/failure return values
    - Consistent error propagation
 
-4. **Serialization**
+5. **Serialization**
    - JSON serialization for events and commands
    - Source generation for AOT compilation
    - Explicit serialization context
+
+6. **Domain Organization**
+   - DDD-style folder structure
+   - Aggregates as top-level organizational units
+   - Clear separation of commands, events, queries, and payloads
+   - Namespaces aligned with folder structure
+   - Domain workflows for cross-aggregate operations
+
+   ```
+   Aggregates/
+   ├── Classes/                   # Class aggregate
+   │   ├── ClassProjector.cs      # Projector for Class aggregate
+   │   ├── Commands/              # Class commands
+   │   ├── Events/                # Class events
+   │   ├── Payloads/              # Class state (Class, DeletedClass)
+   │   └── Queries/               # Class queries
+   ├── Students/                  # Student aggregate
+   │   ├── StudentProjector.cs    # Projector for Student aggregate
+   │   ├── Commands/              # Student commands
+   │   ├── Events/                # Student events
+   │   ├── Payloads/              # Student state (Student, DeletedStudent)
+   │   └── Queries/               # Student queries
+   ├── Teachers/                  # Teacher aggregate
+   │   ├── TeacherProjector.cs    # Projector for Teacher aggregate
+   │   ├── Commands/              # Teacher commands
+   │   ├── Events/                # Teacher events
+   │   ├── Payloads/              # Teacher state (Teacher, DeletedTeacher)
+   │   └── Queries/               # Teacher queries
+   └── WeatherForecasts/          # WeatherForecast aggregate
+       ├── WeatherForecastProjector.cs  # Projector for WeatherForecast
+       ├── Commands/              # WeatherForecast commands
+       ├── Events/                # WeatherForecast events
+       ├── Payloads/              # WeatherForecast state
+       └── Queries/               # WeatherForecast queries
+   ```
