@@ -246,6 +246,9 @@ The School Management System is in active development with core functionality im
 15. **NEW**: Implemented server actions for client-server communication
 16. **NEW**: Improved layout with proper centering for all pages
 17. **NEW**: Enhanced container styling with responsive padding and maximum width
+18. **NEW**: Reorganized domain folder structure following DDD principles
+19. **NEW**: Created dedicated folders for aggregates, commands, events, queries, and payloads
+20. **NEW**: Updated namespaces to match folder structure
 
 ### Upcoming Milestones
 

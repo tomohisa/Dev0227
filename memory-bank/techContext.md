@@ -98,12 +98,44 @@ SchoolManagement/
 ### Key Components
 
 1. **SchoolManagement.Domain**
-   - Contains domain models (Student, Teacher, Class)
+   - Contains domain models (Student, Teacher, Class, WeatherForecast)
    - Defines commands and events
    - Implements projectors for state management
    - Defines queries for data retrieval
    - JSON serialization context for AOT compilation
    - Generated domain types via Sekiban.Pure.SourceGenerator
+   - Organized in a DDD-style folder structure:
+     ```
+     SchoolManagement.Domain/
+     ├── Aggregates/                    # Domain aggregates
+     │   ├── Classes/                   # Class aggregate
+     │   │   ├── ClassProjector.cs      # Projector for Class aggregate
+     │   │   ├── Commands/              # Class commands
+     │   │   ├── Events/                # Class events
+     │   │   ├── Payloads/              # Class state (Class, DeletedClass)
+     │   │   └── Queries/               # Class queries
+     │   ├── Students/                  # Student aggregate
+     │   │   ├── StudentProjector.cs    # Projector for Student aggregate
+     │   │   ├── Commands/              # Student commands
+     │   │   ├── Events/                # Student events
+     │   │   ├── Payloads/              # Student state (Student, DeletedStudent)
+     │   │   └── Queries/               # Student queries
+     │   ├── Teachers/                  # Teacher aggregate
+     │   │   ├── TeacherProjector.cs    # Projector for Teacher aggregate
+     │   │   ├── Commands/              # Teacher commands
+     │   │   ├── Events/                # Teacher events
+     │   │   ├── Payloads/              # Teacher state (Teacher, DeletedTeacher)
+     │   │   └── Queries/               # Teacher queries
+     │   └── WeatherForecasts/          # WeatherForecast aggregate
+     │       ├── WeatherForecastProjector.cs  # Projector for WeatherForecast
+     │       ├── Commands/              # WeatherForecast commands
+     │       ├── Events/                # WeatherForecast events
+     │       ├── Payloads/              # WeatherForecast state
+     │       └── Queries/               # WeatherForecast queries
+     ├── Workflows/                     # Domain workflows
+     │   └── DuplicateCheckWorkflows.cs # Workflows for duplicate checking
+     └── SchoolManagementDomainEventsJsonContext.cs  # JSON serialization context
+     ```
 
 2. **SchoolManagement.ApiService**
    - Exposes API endpoints for commands and queries
