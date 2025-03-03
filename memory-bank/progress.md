@@ -2,7 +2,7 @@
 
 ## Current Status
 
-The School Management System is in active development with core functionality implemented. The system provides CRUD operations for students, teachers, and classes, with relationship management between these entities.
+The School Management System is in active development with core functionality implemented. The system provides CRUD operations for students, teachers, and classes, with relationship management between these entities. A new Next.js frontend has been implemented alongside the original Blazor frontend.
 
 ## What Works
 
@@ -41,20 +41,29 @@ The School Management System is in active development with core functionality im
    - ✅ Query handling for read operations
    - ✅ Source generation for domain types
 
-2. **Web Frontend**
+2. **Web Frontend - Blazor**
    - ✅ Responsive Blazor components
    - ✅ Modal-based forms for data entry
    - ✅ Form validation
    - ✅ Tabular data presentation
    - ✅ Viewport scaling for UI adaptability
 
-3. **API Services**
+3. **Web Frontend - Next.js**
+   - ✅ Next.js application with TypeScript
+   - ✅ shadcn/ui components for modern UI
+   - ✅ Responsive design for all screen sizes
+   - ✅ Dark mode support with theme switching
+   - ✅ Data tables with sorting and filtering
+   - ✅ Dialog components for adding new entities
+   - ✅ Form validation and error handling
+
+4. **API Services**
    - ✅ Command endpoints for state changes
    - ✅ Query endpoints for data retrieval
    - ✅ Error handling and validation
    - ✅ API clients for frontend communication
 
-4. **Testing**
+5. **Testing**
    - ✅ Domain unit tests with Sekiban's in-memory framework
    - ✅ End-to-end test setup with Playwright
    - ✅ Page object models for UI testing
@@ -137,6 +146,7 @@ The School Management System is in active development with core functionality im
    - Modal dialogs may have visibility issues on some mobile devices
    - Form validation messages could be more descriptive
    - Search functionality is basic and could be enhanced
+   - Next.js dialog components need better error handling
 
 2. **Performance Issues**
    - Large datasets may cause performance degradation
@@ -162,6 +172,7 @@ The School Management System is in active development with core functionality im
 3. Add data export options
 4. Improve error handling and user feedback
 5. Expand unit test coverage for edge cases
+6. Complete the Next.js frontend implementation
 
 ### Short-term Goals (1-3 Months)
 
@@ -194,7 +205,7 @@ The School Management System is in active development with core functionality im
 1. **Feature Completion**
    - Core features: 75% complete
    - Advanced features: 10% complete
-   - Technical infrastructure: 60% complete
+   - Technical infrastructure: 65% complete (improved with Next.js frontend)
    - Testing infrastructure: 50% complete
 
 2. **Quality Metrics**
@@ -218,6 +229,10 @@ The School Management System is in active development with core functionality im
 6. Created comprehensive domain unit tests for all entities
 7. Implemented relationship validation tests
 8. Established testing patterns using Given-When-Then approach
+9. Created a Next.js frontend with shadcn/ui components
+10. Implemented dialog components for adding new entities
+11. Added form validation and error handling
+12. Implemented dark mode support with theme switching
 
 ### Upcoming Milestones
 
@@ -255,3 +270,29 @@ The School Management System is in active development with core functionality im
    - Dedicated test class for relationship validation
    - Tests follow a consistent pattern for readability
    - Test names clearly describe the behavior being tested
+
+### Frontend Development
+
+1. **Next.js and React**
+   - Next.js provides a modern, responsive frontend framework
+   - React's component model enables efficient UI development
+   - TypeScript integration improves code quality and developer experience
+   - The App Router provides a clean, intuitive routing system
+
+2. **UI Component Libraries**
+   - shadcn/ui offers high-quality, customizable UI components
+   - Components can be easily styled with Tailwind CSS
+   - Dialog components provide focused user interactions
+   - Form validation is critical for data integrity
+
+3. **API Integration**
+   - API clients should be organized by entity type
+   - Error handling is essential for a good user experience
+   - Form validation should occur before API calls
+   - Proper state management improves user experience
+
+4. **Theme Support**
+   - Dark mode support enhances user experience
+   - Theme switching should be persistent
+   - UI components should adapt to theme changes
+   - Color contrast is important for accessibility

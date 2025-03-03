@@ -2,7 +2,7 @@
 
 ## Current Focus
 
-The School Management System is currently in active development with a focus on implementing the core functionality for managing students, teachers, and classes. The system uses the Sekiban event sourcing framework with a Blazor web frontend.
+The School Management System is currently in active development with a focus on implementing the core functionality for managing students, teachers, and classes. The system uses the Sekiban event sourcing framework with a Blazor web frontend, and now also includes a Next.js frontend implementation.
 
 ### Active Development Areas
 
@@ -17,6 +17,7 @@ The School Management System is currently in active development with a focus on 
    - Modal-based forms for data entry
    - Search and filtering capabilities
    - Tabular data presentation
+   - Next.js frontend with shadcn/ui components
 
 3. **Event Sourcing Infrastructure**
    - Command handling and validation
@@ -32,33 +33,45 @@ The School Management System is currently in active development with a focus on 
 
 ## Recent Changes
 
-1. **Student Management**
+1. **Next.js Frontend Implementation**
+   - Created a Next.js implementation of the frontend using shadcn/ui components
+   - Implemented API clients for students, teachers, and classes
+   - Created pages for students, teachers, and classes with data tables
+   - Implemented dialog components for adding new entities
+   - Added form validation and error handling
+   - Implemented dark mode support with theme switching
+
+2. **Student Management**
    - Implemented student registration, update, and deletion
    - Added student-to-class assignment functionality
    - Implemented search by name and student ID
    - Created UI components for student management
    - Added duplicate studentId checking to prevent duplicates
    - Moved duplicate checking logic to domain workflows for better separation of concerns
+   - Added dialog component for adding new students in Next.js frontend
 
-2. **Teacher Management**
+3. **Teacher Management**
    - Implemented teacher registration, update, and deletion
    - Added teacher-to-class assignment functionality
    - Created UI components for teacher management
    - Added duplicate teacherId checking to prevent duplicates
    - Moved duplicate checking logic to domain workflows for better separation of concerns
+   - Added dialog component for adding new teachers in Next.js frontend
 
-3. **Class Management**
+4. **Class Management**
    - Implemented class creation, update, and deletion
    - Added student and teacher assignment to classes
    - Created UI components for class management
+   - Added dialog component for adding new classes in Next.js frontend
 
-4. **UI Enhancements**
+5. **UI Enhancements**
    - Added viewport scaling feature for better adaptability
    - Implemented responsive design for different screen sizes
    - Enhanced modal dialogs for data entry
    - Improved form validation
+   - Created modern UI with shadcn/ui components in Next.js frontend
 
-5. **Testing Enhancements**
+6. **Testing Enhancements**
    - Created SchoolManagement.Domain.Tests project
    - Implemented comprehensive unit tests for Student entity
    - Implemented comprehensive unit tests for Teacher entity
@@ -68,7 +81,13 @@ The School Management System is currently in active development with a focus on 
 
 ## Current Decisions and Considerations
 
-1. **Event Sourcing Implementation**
+1. **Frontend Implementation**
+   - Maintaining both Blazor and Next.js frontends
+   - Using shadcn/ui for modern UI components in Next.js
+   - Implementing responsive design for all screen sizes
+   - Supporting dark mode with theme switching
+
+2. **Event Sourcing Implementation**
    - Using Sekiban for event sourcing infrastructure
    - Implementing proper command validation
    - Ensuring correct event projection
@@ -76,19 +95,20 @@ The School Management System is currently in active development with a focus on 
    - Using query-based validation for duplicate checking
    - Leveraging source-generated domain types
 
-2. **UI/UX Decisions**
-   - Using Bootstrap for responsive design
+3. **UI/UX Decisions**
+   - Using Bootstrap for responsive design in Blazor
+   - Using shadcn/ui for responsive design in Next.js
    - Implementing modal dialogs for focused interactions
    - Using form validation for data integrity
    - Providing search and filtering capabilities
 
-3. **Performance Considerations**
+4. **Performance Considerations**
    - Optimizing query performance
    - Implementing efficient projections
    - Managing Orleans grain lifecycle
    - Ensuring responsive UI
 
-4. **Testing Strategy**
+5. **Testing Strategy**
    - Using Sekiban's in-memory testing for domain logic
    - Using Playwright for end-to-end testing
    - Implementing page object models
@@ -105,6 +125,7 @@ The School Management System is currently in active development with a focus on 
    - Improve error handling and user feedback
    - Add additional data validation rules
    - Expand unit test coverage for edge cases
+   - Complete the Next.js frontend implementation
 
 2. **Medium-term Goals**
    - Implement reporting functionality
@@ -128,6 +149,7 @@ The School Management System is currently in active development with a focus on 
    - What is the best approach for handling large aggregate projections?
    - How to optimize query performance for large datasets?
    - How to test complex event sourcing scenarios?
+   - Which frontend implementation (Blazor or Next.js) should be the primary focus?
 
 2. **Product Questions**
    - What additional features would provide the most value to users?
@@ -143,6 +165,7 @@ The School Management System is currently in active development with a focus on 
    - Optimizing query performance
    - Handling concurrent updates
    - Testing event sourcing systems effectively
+   - Maintaining two frontend implementations
 
 2. **UX Challenges**
    - Providing intuitive interfaces for complex operations
@@ -165,6 +188,7 @@ The School Management System is currently in active development with a focus on 
    - Optimize query performance
    - Enhance error handling
    - Maintain comprehensive test coverage
+   - Complete the Next.js frontend implementation
 
 2. **Medium Priority**
    - Improve search and filtering
@@ -202,3 +226,11 @@ The School Management System is currently in active development with a focus on 
    - Domain workflows should depend on abstractions rather than concrete implementations
    - The ISekibanExecutor interface is in the Sekiban.Pure.Executors namespace
    - This approach enables easier unit testing and better separation of concerns
+
+4. **Frontend Development**
+   - Next.js provides a modern, responsive frontend framework
+   - shadcn/ui offers high-quality, customizable UI components
+   - React's component model enables efficient UI development
+   - Form validation is critical for data integrity
+   - Dialog components provide focused user interactions
+   - Dark mode support enhances user experience
