@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { StudentApi } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { registerStudent } from "./actions";
 
-export function AddStudentDialog() {
-  const router = useRouter();
+interface AddStudentDialogProps {
+  onSuccess?: () => void;
+}
+
+export function AddStudentDialog({ onSuccess }: AddStudentDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,6 @@ export function AddStudentDialog() {
       // Validate date format
       if (!formData.dateOfBirth) {
         setError("Date of birth is required");
-        setLoading(false);
         return;
       }
       
@@ -56,60 +57,49 @@ export function AddStudentDialog() {
       // Validate email
       if (!formData.email) {
         setError("Email is required");
-        setLoading(false);
         return;
       }
       
       // Validate phone
       if (!formData.phoneNumber) {
         setError("Phone number is required");
-        setLoading(false);
         return;
       }
       
       // Validate address
       if (!formData.address) {
         setError("Address is required");
-        setLoading(false);
         return;
       }
       
-      console.log("Submitting student data:", {
+      const result = await registerStudent({
         name: formData.name,
         studentId: formData.studentId,
-        dateOfBirth: dateOfBirth,
+        dateOfBirth,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
         address: formData.address,
       });
       
-      await StudentApi.registerStudent({
-        name: formData.name,
-        studentId: formData.studentId,
-        dateOfBirth: dateOfBirth,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
-      });
-      
-      setOpen(false);
-      setFormData({
-        name: "",
-        studentId: "",
-        dateOfBirth: "",
-        email: "",
-        phoneNumber: "",
-        address: "",
-      });
-      
-      // Refresh the page to show the new student
-      router.refresh();
-      
-      // Force a page reload to update the data
-      window.location.reload();
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setOpen(false);
+        setFormData({
+          name: "",
+          studentId: "",
+          dateOfBirth: "",
+          email: "",
+          phoneNumber: "",
+          address: "",
+        });
+        
+        // Call onSuccess callback if provided
+        onSuccess?.();
+      }
     } catch (err: any) {
       console.error("Error registering student:", err);
-      setError(err.response?.data?.detail || "Failed to register student. Please try again.");
+      setError("Failed to register student. Please try again.");
     } finally {
       setLoading(false);
     }

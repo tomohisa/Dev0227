@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="container py-6 md:py-12">
+    <main className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-12">
       <div className="flex flex-col items-center text-center">
         <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
           School Management System

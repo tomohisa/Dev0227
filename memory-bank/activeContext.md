@@ -40,6 +40,9 @@ The School Management System is currently in active development with a focus on 
    - Implemented dialog components for adding new entities
    - Added form validation and error handling
    - Implemented dark mode support with theme switching
+   - **NEW**: Implemented BFF (Backend For Frontend) pattern for all API calls
+   - **NEW**: Improved layout with proper centering and responsive design
+   - **NEW**: Removed direct API calls from client components
 
 2. **Student Management**
    - Implemented student registration, update, and deletion
@@ -49,6 +52,7 @@ The School Management System is currently in active development with a focus on 
    - Added duplicate studentId checking to prevent duplicates
    - Moved duplicate checking logic to domain workflows for better separation of concerns
    - Added dialog component for adding new students in Next.js frontend
+   - **NEW**: Converted client-side API calls to server actions
 
 3. **Teacher Management**
    - Implemented teacher registration, update, and deletion
@@ -57,12 +61,14 @@ The School Management System is currently in active development with a focus on 
    - Added duplicate teacherId checking to prevent duplicates
    - Moved duplicate checking logic to domain workflows for better separation of concerns
    - Added dialog component for adding new teachers in Next.js frontend
+   - **NEW**: Converted client-side API calls to server actions
 
 4. **Class Management**
    - Implemented class creation, update, and deletion
    - Added student and teacher assignment to classes
    - Created UI components for class management
    - Added dialog component for adding new classes in Next.js frontend
+   - **NEW**: Converted client-side API calls to server actions
 
 5. **UI Enhancements**
    - Added viewport scaling feature for better adaptability
@@ -70,6 +76,9 @@ The School Management System is currently in active development with a focus on 
    - Enhanced modal dialogs for data entry
    - Improved form validation
    - Created modern UI with shadcn/ui components in Next.js frontend
+   - **NEW**: Improved layout with proper centering for all pages
+   - **NEW**: Enhanced container styling with responsive padding and maximum width
+   - **NEW**: Fixed navigation menu positioning
 
 6. **Testing Enhancements**
    - Created SchoolManagement.Domain.Tests project
@@ -79,6 +88,13 @@ The School Management System is currently in active development with a focus on 
    - Added relationship tests to verify entity connections
    - Established testing patterns using Given-When-Then approach
 
+7. **Architecture Improvements**
+   - **NEW**: Implemented BFF pattern for all API calls
+   - **NEW**: Created server-side services for data fetching
+   - **NEW**: Implemented server actions for client-server communication
+   - **NEW**: Separated client and server components for better architecture
+   - **NEW**: Improved error handling and state management
+
 ## Current Decisions and Considerations
 
 1. **Frontend Implementation**
@@ -86,6 +102,8 @@ The School Management System is currently in active development with a focus on 
    - Using shadcn/ui for modern UI components in Next.js
    - Implementing responsive design for all screen sizes
    - Supporting dark mode with theme switching
+   - **NEW**: Using BFF pattern for all API calls
+   - **NEW**: Separating client and server components
 
 2. **Event Sourcing Implementation**
    - Using Sekiban for event sourcing infrastructure
@@ -101,12 +119,15 @@ The School Management System is currently in active development with a focus on 
    - Implementing modal dialogs for focused interactions
    - Using form validation for data integrity
    - Providing search and filtering capabilities
+   - **NEW**: Ensuring proper layout centering for all pages
+   - **NEW**: Using responsive padding and maximum width for containers
 
 4. **Performance Considerations**
    - Optimizing query performance
    - Implementing efficient projections
    - Managing Orleans grain lifecycle
    - Ensuring responsive UI
+   - **NEW**: Using server-side data fetching for improved performance
 
 5. **Testing Strategy**
    - Using Sekiban's in-memory testing for domain logic
@@ -150,6 +171,8 @@ The School Management System is currently in active development with a focus on 
    - How to optimize query performance for large datasets?
    - How to test complex event sourcing scenarios?
    - Which frontend implementation (Blazor or Next.js) should be the primary focus?
+   - **NEW**: How to further optimize the BFF pattern for better performance?
+   - **NEW**: What additional server actions should be implemented?
 
 2. **Product Questions**
    - What additional features would provide the most value to users?
@@ -166,12 +189,16 @@ The School Management System is currently in active development with a focus on 
    - Handling concurrent updates
    - Testing event sourcing systems effectively
    - Maintaining two frontend implementations
+   - **NEW**: Managing server-side state with server actions
+   - **NEW**: Ensuring proper error handling with BFF pattern
 
 2. **UX Challenges**
    - Providing intuitive interfaces for complex operations
    - Ensuring responsive design across devices
    - Balancing feature richness with simplicity
    - Providing appropriate feedback for asynchronous operations
+   - **NEW**: Maintaining consistent layout across all pages
+   - **NEW**: Ensuring proper spacing and alignment
 
 3. **Testing Challenges**
    - Maintaining test coverage as the domain evolves
@@ -179,6 +206,7 @@ The School Management System is currently in active development with a focus on 
    - Ensuring tests remain fast and reliable
    - Balancing unit tests and integration tests
    - Handling source-generated code in tests
+   - **NEW**: Testing server actions and BFF pattern
 
 ## Current Priorities
 
@@ -189,6 +217,8 @@ The School Management System is currently in active development with a focus on 
    - Enhance error handling
    - Maintain comprehensive test coverage
    - Complete the Next.js frontend implementation
+   - **NEW**: Refine the BFF pattern implementation
+   - **NEW**: Ensure consistent layout across all pages
 
 2. **Medium Priority**
    - Improve search and filtering
@@ -234,3 +264,7 @@ The School Management System is currently in active development with a focus on 
    - Form validation is critical for data integrity
    - Dialog components provide focused user interactions
    - Dark mode support enhances user experience
+   - **NEW**: BFF pattern improves security and performance
+   - **NEW**: Server actions provide a clean way to handle server-side operations
+   - **NEW**: Proper layout centering is essential for good user experience
+   - **NEW**: Tailwind's container class needs additional styling for proper centering

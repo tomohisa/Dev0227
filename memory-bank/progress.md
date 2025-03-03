@@ -56,12 +56,18 @@ The School Management System is in active development with core functionality im
    - ✅ Data tables with sorting and filtering
    - ✅ Dialog components for adding new entities
    - ✅ Form validation and error handling
+   - ✅ **NEW**: BFF pattern implementation
+   - ✅ **NEW**: Server actions for data operations
+   - ✅ **NEW**: Improved layout with proper centering
+   - ✅ **NEW**: Enhanced container styling with responsive padding
 
 4. **API Services**
    - ✅ Command endpoints for state changes
    - ✅ Query endpoints for data retrieval
    - ✅ Error handling and validation
    - ✅ API clients for frontend communication
+   - ✅ **NEW**: Server-side services for data fetching
+   - ✅ **NEW**: Server actions for client-server communication
 
 5. **Testing**
    - ✅ Domain unit tests with Sekiban's in-memory framework
@@ -173,6 +179,8 @@ The School Management System is in active development with core functionality im
 4. Improve error handling and user feedback
 5. Expand unit test coverage for edge cases
 6. Complete the Next.js frontend implementation
+7. **NEW**: Refine the BFF pattern implementation
+8. **NEW**: Ensure consistent layout across all pages
 
 ### Short-term Goals (1-3 Months)
 
@@ -203,9 +211,9 @@ The School Management System is in active development with core functionality im
 ### Key Performance Indicators
 
 1. **Feature Completion**
-   - Core features: 75% complete
+   - Core features: 80% complete (improved with BFF pattern implementation)
    - Advanced features: 10% complete
-   - Technical infrastructure: 65% complete (improved with Next.js frontend)
+   - Technical infrastructure: 70% complete (improved with server actions and layout fixes)
    - Testing infrastructure: 50% complete
 
 2. **Quality Metrics**
@@ -233,6 +241,11 @@ The School Management System is in active development with core functionality im
 10. Implemented dialog components for adding new entities
 11. Added form validation and error handling
 12. Implemented dark mode support with theme switching
+13. **NEW**: Implemented BFF pattern for all API calls
+14. **NEW**: Created server-side services for data fetching
+15. **NEW**: Implemented server actions for client-server communication
+16. **NEW**: Improved layout with proper centering for all pages
+17. **NEW**: Enhanced container styling with responsive padding and maximum width
 
 ### Upcoming Milestones
 
@@ -290,9 +303,17 @@ The School Management System is in active development with core functionality im
    - Error handling is essential for a good user experience
    - Form validation should occur before API calls
    - Proper state management improves user experience
+   - **NEW**: BFF pattern improves security and performance
+   - **NEW**: Server actions provide a clean way to handle server-side operations
 
 4. **Theme Support**
    - Dark mode support enhances user experience
    - Theme switching should be persistent
    - UI components should adapt to theme changes
    - Color contrast is important for accessibility
+
+5. **Layout and Styling**
+   - **NEW**: Tailwind's container class needs additional styling for proper centering
+   - **NEW**: Using mx-auto with max-width provides proper centering
+   - **NEW**: Responsive padding improves layout on different screen sizes
+   - **NEW**: Consistent layout across all pages is essential for good user experience

@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TeacherApi } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { registerTeacher } from "./actions";
 
-export function AddTeacherDialog() {
-  const router = useRouter();
+interface AddTeacherDialogProps {
+  onSuccess?: () => void;
+}
+
+export function AddTeacherDialog({ onSuccess }: AddTeacherDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,44 +45,31 @@ export function AddTeacherDialog() {
       setLoading(true);
       setError(null);
       
-      // Validate required fields
-      if (!formData.name) {
-        setError("Name is required");
-        setLoading(false);
-        return;
-      }
-      
-      if (!formData.teacherId) {
-        setError("Teacher ID is required");
-        setLoading(false);
-        return;
-      }
-      
-      if (!formData.subject) {
-        setError("Subject is required");
-        setLoading(false);
-        return;
-      }
-      
+      // Validate email
       if (!formData.email) {
         setError("Email is required");
-        setLoading(false);
         return;
       }
       
+      // Validate phone
       if (!formData.phoneNumber) {
         setError("Phone number is required");
-        setLoading(false);
         return;
       }
       
+      // Validate address
       if (!formData.address) {
         setError("Address is required");
-        setLoading(false);
+        return;
+      }
+
+      // Validate subject
+      if (!formData.subject) {
+        setError("Subject is required");
         return;
       }
       
-      console.log("Submitting teacher data:", {
+      const result = await registerTeacher({
         name: formData.name,
         teacherId: formData.teacherId,
         subject: formData.subject,
@@ -89,33 +78,25 @@ export function AddTeacherDialog() {
         address: formData.address,
       });
       
-      await TeacherApi.registerTeacher({
-        name: formData.name,
-        teacherId: formData.teacherId,
-        subject: formData.subject,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
-      });
-      
-      setOpen(false);
-      setFormData({
-        name: "",
-        teacherId: "",
-        subject: "",
-        email: "",
-        phoneNumber: "",
-        address: "",
-      });
-      
-      // Refresh the page to show the new teacher
-      router.refresh();
-      
-      // Force a page reload to update the data
-      window.location.reload();
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setOpen(false);
+        setFormData({
+          name: "",
+          teacherId: "",
+          subject: "",
+          email: "",
+          phoneNumber: "",
+          address: "",
+        });
+        
+        // Call onSuccess callback if provided
+        onSuccess?.();
+      }
     } catch (err: any) {
       console.error("Error registering teacher:", err);
-      setError(err.response?.data?.detail || "Failed to register teacher. Please try again.");
+      setError("Failed to register teacher. Please try again.");
     } finally {
       setLoading(false);
     }

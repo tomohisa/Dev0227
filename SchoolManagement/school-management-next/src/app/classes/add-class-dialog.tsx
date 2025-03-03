@@ -13,10 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ClassApi } from "@/lib/api";
+import { createClass } from "./actions";
 import { useRouter } from "next/navigation";
 
-export function AddClassDialog() {
+interface AddClassDialogProps {
+  onSuccess?: () => void;
+}
+
+export function AddClassDialog({ onSuccess }: AddClassDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -79,27 +83,28 @@ export function AddClassDialog() {
         schedule: formData.schedule,
       });
       
-      await ClassApi.createClass({
+      const result = await createClass({
         name: formData.name,
         classCode: formData.classCode,
         description: formData.description,
       });
       
-      setOpen(false);
-      setFormData({
-        name: "",
-        classCode: "",
-        description: "",
-        capacity: "",
-        location: "",
-        schedule: "",
-      });
-      
-      // Refresh the page to show the new class
-      router.refresh();
-      
-      // Force a page reload to update the data
-      window.location.reload();
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setOpen(false);
+        setFormData({
+          name: "",
+          classCode: "",
+          description: "",
+          capacity: "",
+          location: "",
+          schedule: "",
+        });
+        
+        // Call onSuccess callback if provided
+        onSuccess?.();
+      }
     } catch (err: any) {
       console.error("Error registering class:", err);
       setError(err.response?.data?.detail || "Failed to register class. Please try again.");
