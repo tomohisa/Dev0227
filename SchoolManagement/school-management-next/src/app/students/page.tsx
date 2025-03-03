@@ -4,32 +4,47 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { Student, StudentApi } from "@/lib/api";
+import { Student } from "@/types/student";
 import { AddStudentDialog } from "./add-student-dialog";
 import { Button } from "@/components/ui/button";
+import { getStudents, deleteStudent } from "@/lib/client/students";
+import { useRouter } from "next/navigation";
 
 export default function StudentsPage() {
+  const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        const data = await StudentApi.getStudents();
-        setStudents(data);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching students:", err);
-        setError("Failed to load students. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const data = await getStudents();
+      setStudents(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching students:", err);
+      setError("Failed to load students. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchStudents();
   }, []);
+
+  const handleDelete = async (studentId: string) => {
+    if (!confirm("Are you sure you want to delete this student?")) return;
+
+    try {
+      await deleteStudent(studentId);
+      await fetchStudents(); // Refresh the list
+    } catch (err) {
+      console.error("Error deleting student:", err);
+      alert("Failed to delete student. Please try again later.");
+    }
+  };
 
   const columns: ColumnDef<Student>[] = [
     {
@@ -67,10 +82,18 @@ export default function StudentsPage() {
         const student = row.original;
         return (
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => router.push(`/students/${student.studentId}/edit`)}
+            >
               Edit
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleDelete(student.studentId)}
+            >
               Delete
             </Button>
           </div>
@@ -83,7 +106,7 @@ export default function StudentsPage() {
     <div className="container py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Students</h1>
-        <AddStudentDialog />
+        <AddStudentDialog onSuccess={fetchStudents} />
       </div>
 
       <Card>
