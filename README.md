@@ -95,6 +95,10 @@ Webフロントエンドは https://localhost:7201 で利用可能になりま�
 - **SchoolManagement.AppHost**: Aspire host for orchestrating services / サービスをオーケストレーションするためのAspireホスト
 - **SchoolManagement.ServiceDefaults**: Common service configurations / 共通サービス設定
 
+## Next.js Project / Next.js プロジェクト
+
+A forthcoming Next.js project that follows the BFF (Backend for Frontend) pattern, accessing APIs on the server side, is located in the `SchoolManagement/school-management-next` directory, where enhancements and advanced features are being developed to extend the School Management System.
+
 ## License / ライセンス
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](./LICENSE) file for details.
